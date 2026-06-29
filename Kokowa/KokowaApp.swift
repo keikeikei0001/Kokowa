@@ -12,6 +12,7 @@ struct KokowaApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+            
         }
     }
 }
