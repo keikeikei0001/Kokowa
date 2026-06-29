@@ -12,48 +12,73 @@ struct CharacterSelectedView: View {
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {
-                titleView()
-                characterSelectedTabView()
-                nextPageButtonView()
+            ZStack {
+                KokowaBackground()
+
+                VStack(spacing: 18) {
+                    titleView()
+                    characterSelectedTabView()
+                    nextPageButtonView()
+                }
+                .padding(.horizontal, 22)
+                .padding(.vertical, 18)
             }
-            .padding()
+            .navigationBarBackButtonHidden(true)
         }
     }
     
     /// タイトル表示View
     @ViewBuilder
     private func titleView() -> some View {
-        Text("キャラクター選択")
-            .font(.title.bold())
-            .padding(.top, 20)
+        VStack(alignment: .leading, spacing: 8) {
+            Text("相棒を選ぶ")
+                .font(.system(size: 34, weight: .bold, design: .rounded))
+                .foregroundStyle(KokowaStyle.primaryText)
+
+            Text("一緒に心の記録を続けるキャラクターを選んでください")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(KokowaStyle.secondaryText)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, 8)
     }
     
     /// キャラクター選択タブView
     @ViewBuilder
     private func characterSelectedTabView() -> some View {
-        VStack {
-            Text("→横にスワイプしてキャラ選択")
+        VStack(spacing: 14) {
+            Text("横にスワイプして選択")
+                .font(.caption.weight(.bold))
+                .foregroundStyle(KokowaStyle.secondaryText)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
             TabView(selection: $viewModel.selectedCharacterIndex) {
                 ForEach(viewModel.characters.indices, id: \.self) { index in
                     Image(viewModel.characters[index].imageName)
                         .resizable()
                         .scaledToFit()
-                        .frame(width: viewModel.characterImageSize)
+                        .frame(width: viewModel.characterImageSize, height: DeviceModel.height * 0.28)
                         .tag(index)
                 }
             }
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
-            .frame(height: DeviceModel.height * 0.3)
+            .frame(height: DeviceModel.height * 0.34)
             
-            Text(viewModel.characters[viewModel.selectedCharacterIndex].name)
-                .font(.headline)
-            
-            Text(viewModel.characters[viewModel.selectedCharacterIndex].explanation)
-                .frame(width: DeviceModel.width * 0.8)
-                .padding()
-            Spacer()
+            VStack(spacing: 8) {
+                Text(viewModel.characters[viewModel.selectedCharacterIndex].name)
+                    .font(.title2.weight(.bold))
+                    .foregroundStyle(KokowaStyle.primaryText)
+
+                Text(viewModel.characters[viewModel.selectedCharacterIndex].explanation)
+                    .font(.body.weight(.medium))
+                    .foregroundStyle(KokowaStyle.secondaryText)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+            }
+            .padding(.horizontal, 8)
         }
+        .padding(22)
+        .kokowaCard()
     }
     
     /// 押下時次のページに遷移するボタンView
@@ -65,14 +90,13 @@ struct CharacterSelectedView: View {
             )
         )) {
             Text("次へ")
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(.blue)
+                .font(.headline.weight(.bold))
                 .foregroundStyle(.white)
-                .cornerRadius(10)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 17)
+                .background(KokowaStyle.teal, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .shadow(color: KokowaStyle.teal.opacity(0.26), radius: 18, x: 0, y: 10)
         }
-        .padding(.horizontal, 20)
     }
 }
-
 

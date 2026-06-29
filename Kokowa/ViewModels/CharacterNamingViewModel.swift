@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 class CharacterNamingViewModel: ObservableObject {
     @Published var inputCharacterName = ""
@@ -19,15 +20,14 @@ class CharacterNamingViewModel: ObservableObject {
     ]
     
     private var authManager: AuthManager?
-    private let userDataManager = UserDataRepository()
-    private let characterDataManager = CharacterDataRepository()
+
     
     var isEnabledcompleteButton: Bool {
         return inputCharacterName.isEmpty
     }
     
     var completeButtonColor: Color {
-        return inputCharacterName.isEmpty ? Color.gray : Color.blue
+        return inputCharacterName.isEmpty ? KokowaStyle.secondaryText.opacity(0.38) : KokowaStyle.teal
     }
     
     init(characterId: String) {
@@ -38,8 +38,8 @@ class CharacterNamingViewModel: ObservableObject {
     @MainActor
     func createInitialData() {
         Task {
-            await createUser()
-            await createCharacterData()
+//            await createUser()
+//            await createCharacterData()
             authManager?.SignIn(userId: authManager?.userId ?? "")
             authManager?.isNewUser = false
         }
@@ -53,23 +53,5 @@ class CharacterNamingViewModel: ObservableObject {
     /// AuthMangerをセット
     func setAuthManager(authManager: AuthManager) {
         self.authManager = authManager
-    }
-    
-    /// ユーザー情報作成
-    private func createUser() async {
-        _ = await userDataManager.saveUser(
-            //            userName: authManager?.userName ?? "",
-            usedCharacterId: characterId,
-            userId: authManager?.userId ?? ""
-        )
-    }
-    
-    /// キャラクター情報新規作成
-    private func createCharacterData() async {
-        await characterDataManager.saveCharacter(
-            id: characterId,
-            name: inputCharacterName,
-            userId: authManager?.userId ?? ""
-        )
     }
 }

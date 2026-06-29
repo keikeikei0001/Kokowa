@@ -2,10 +2,11 @@
 //  AuthViewModel.swift
 //  LifeIsRpg
 //
-//  Created by けいけい on 2024/11/23.
+//  Created by けいけい on 2026/06/29.
 //
 
 import SwiftUI
+import Combine
 
 class AuthManager: ObservableObject {
     @Published var isSignedIn = false

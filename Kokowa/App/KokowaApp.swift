@@ -9,10 +9,13 @@ import SwiftUI
 
 @main
 struct KokowaApp: App {
+    @StateObject private var authManager = AuthManager()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
-            
+                .environmentObject(authManager)
+                .preferredColorScheme(.light)
         }
     }
 }

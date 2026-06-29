@@ -7,36 +7,10 @@
 
 import SwiftUI
 import AuthenticationServices
+import Combine
 
 class LoginViewModel: ObservableObject {
     private var authManager: AuthManager?
-    private let userDataManager = UserDataRepository()
-    
-    /// Apple IDログインのリクエスト設定
-    func requestSignInAppleId(_ request: ASAuthorizationAppleIDRequest) {
-        request.requestedScopes = []
-    }
-    
-    /// Apple IDログインの結果処理
-    @MainActor
-    func handleSignInButtonTap(_ result: Result<ASAuthorization, Error>) {
-        switch result {
-        case .success(let auth):
-            if let appleIDCredential = auth.credential as? ASAuthorizationAppleIDCredential {
-                let userId = appleIDCredential.user
-                userDataManager.checkAlreadyExsitUserId(userIdentifier: userId) { isNewUser in
-                    if isNewUser {
-                        self.authManager?.userId = userId
-                        self.authManager?.isNewUser = isNewUser
-                    } else {
-                        self.authManager?.SignIn(userId: userId)
-                    }
-                }
-            }
-        case .failure(let error):
-            print("Sign in with Apple failed: \(error.localizedDescription)")
-        }
-    }
     
     /// AuthMangerをセット
     func setAuthManager(authManager: AuthManager) {

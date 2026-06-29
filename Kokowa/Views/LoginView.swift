@@ -13,9 +13,16 @@ struct LoginView: View {
     @StateObject private var viewModel = LoginViewModel()
     
     var body: some View {
-        VStack {
-            explanatoryTextView()
-            SignInButtonTest()
+        ZStack {
+            KokowaBackground()
+
+            VStack(spacing: 24) {
+                Spacer()
+                explanatoryTextView()
+                SignInButtonTest()
+                Spacer()
+            }
+            .padding(24)
         }
         .onAppear {
             viewModel.setAuthManager(authManager: authManager)
@@ -25,20 +32,35 @@ struct LoginView: View {
     /// 画面の説明文View
     @ViewBuilder
     private func explanatoryTextView() -> some View {
-        Text("ログイン / アカウント作成")
-            .font(.title)
-            .padding()
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Kokowa")
+                .font(.system(size: 44, weight: .bold, design: .rounded))
+                .foregroundStyle(KokowaStyle.primaryText)
+
+            Text("あなたの心に寄り添う相棒を育てましょう")
+                .font(.headline)
+                .foregroundStyle(KokowaStyle.secondaryText)
+                .lineSpacing(4)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(28)
+        .kokowaCard()
     }
     
     /// テスト用のサインインView
     @ViewBuilder
     private func SignInButtonTest() -> some View {
         Button(action: viewModel.handleSignInButtonTapTest) {
-            Text("テスト用サインインボタン")
+            Text("はじめる")
+                .font(.headline.weight(.bold))
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 17)
+                .background(KokowaStyle.teal, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .shadow(color: KokowaStyle.teal.opacity(0.28), radius: 18, x: 0, y: 10)
         }
     }
 }
-
 
 
 

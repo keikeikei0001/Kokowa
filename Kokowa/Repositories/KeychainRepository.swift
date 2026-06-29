@@ -2,14 +2,15 @@
 //  KeychainRepository.swift
 //  LifeIsRpg
 //
-//  Created by けいけい on 2024/11/22.
+//  Created by けいけい on 2026/06/29.
 //
 
 import SwiftUI
 import KeychainAccess
+import Combine
 
 class KeychainRepository: ObservableObject {
-    let keychain = Keychain(service: "com.example.lifeIsRpg")
+    let keychain = Keychain(service: "com.example.Kokowa")
     
     /// ユーザーIDをキーチェインに保存する
     func saveToKeychain(userIdentifier: String) {

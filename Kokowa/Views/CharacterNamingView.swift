@@ -13,13 +13,19 @@ struct CharacterNamingView: View {
     @FocusState private var isFocused: Bool
     
     var body: some View {
-        VStack {
-            titleView()
-            characterTextFieldView()
-            characterView()
-            completeButtonView()
+        ZStack {
+            KokowaBackground()
+
+            VStack(spacing: 18) {
+                titleView()
+                characterCardView()
+                completeButtonView()
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 22)
+            .padding(.vertical, 18)
         }
-        .padding()
+        .hideKeyboardOnTap()
         .onAppear {
             viewModel.setAuthManager(authManager: authManager)
         }
@@ -28,22 +34,46 @@ struct CharacterNamingView: View {
     /// タイトル表示View
     @ViewBuilder
     private func titleView() -> some View {
-        Text("名前を付けよう")
-            .font(.title)
-            .fontWeight(.bold)
-            .padding(.top, 20)
+        VStack(alignment: .leading, spacing: 8) {
+            Text("名前をつける")
+                .font(.system(size: 34, weight: .bold, design: .rounded))
+                .foregroundStyle(KokowaStyle.primaryText)
+
+            Text("これから一緒に過ごす相棒の名前を決めましょう")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(KokowaStyle.secondaryText)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, 8)
     }
     
     /// キャラクター名入力用テキストフィールド
     @ViewBuilder
     private func characterTextFieldView() -> some View {
         TextField("キャラに名前をつけてください", text: $viewModel.inputCharacterName)
-            .textFieldStyle(.roundedBorder)
-            .padding()
+            .font(.headline)
+            .foregroundStyle(KokowaStyle.primaryText)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 16)
+            .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(isFocused ? KokowaStyle.teal.opacity(0.65) : Color.white.opacity(0.9), lineWidth: 1)
+            )
             .focused($isFocused)
             .onChange(of: viewModel.inputCharacterName) { newValue in
                 viewModel.checkLimitSixCharacters(newValue: newValue)
             }
+    }
+
+    @ViewBuilder
+    private func characterCardView() -> some View {
+        VStack(spacing: 18) {
+            characterTextFieldView()
+            characterView()
+        }
+        .padding(22)
+        .kokowaCard()
     }
     
     /// キャラクターView
@@ -53,9 +83,8 @@ struct CharacterNamingView: View {
             Image(viewModel.characterId)
                 .resizable()
                 .scaledToFit()
-                .frame(width: DeviceModel.width/2)
-                .padding()
-            Spacer()
+                .frame(width: DeviceModel.width * 0.58, height: DeviceModel.height * 0.34)
+                .shadow(color: KokowaStyle.teal.opacity(0.22), radius: 18, x: 0, y: 12)
         }
     }
     
@@ -64,13 +93,13 @@ struct CharacterNamingView: View {
     private func completeButtonView() -> some View {
         Button(action: viewModel.createInitialData) {
             Text("完了")
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(viewModel.completeButtonColor)
+                .font(.headline.weight(.bold))
                 .foregroundStyle(.white)
-                .cornerRadius(10)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 17)
+                .background(viewModel.completeButtonColor, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .shadow(color: KokowaStyle.teal.opacity(viewModel.isEnabledcompleteButton ? 0 : 0.26), radius: 18, x: 0, y: 10)
         }
         .disabled(viewModel.isEnabledcompleteButton)
-        .padding(.horizontal, 20)
     }
 }
