@@ -13,6 +13,7 @@ struct EntryView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var authManager: AuthManager
     @StateObject private var viewModel = EntryViewModel()
+    @FocusState private var isGratitudeDraftFocused: Bool
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -402,11 +403,23 @@ struct EntryView: View {
                 .frame(minHeight: viewModel.gratitudeFieldHeight)
                 .textInputAutocapitalization(.never)
                 .submitLabel(.done)
-                .onSubmit(viewModel.commitGratitudeDraftIfNeeded)
+                .focused($isGratitudeDraftFocused)
+                .onSubmit(commitGratitudeDraftAndFocusNextField)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
         .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    /// 感謝の入力を確定し、次の空欄へ続けて入力できる状態にする。
+    private func commitGratitudeDraftAndFocusNextField() {
+        viewModel.commitGratitudeDraftIfNeeded()
+
+        guard viewModel.shouldShowGratitudeDraftField else { return }
+
+        DispatchQueue.main.async {
+            isGratitudeDraftFocused = true
+        }
     }
 
     /// 感謝カードの入力済み欄を表示する。

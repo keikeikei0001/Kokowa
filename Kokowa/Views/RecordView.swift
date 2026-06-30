@@ -138,8 +138,8 @@ struct RecordView: View {
     /// 月間カレンダーと選択日の詳細を表示するカード。
     @ViewBuilder
     private func calendarCardView() -> some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 10) {
                 Text("カレンダー")
                     .font(.title2.weight(.bold))
                     .foregroundStyle(.primaryTextBlack)
@@ -157,8 +157,8 @@ struct RecordView: View {
             calendarGridView()
             selectedDateDetailCardView()
         }
-        .padding(18)
-        .kokowaCard(cornerRadius: 24)
+        .padding(16)
+        .kokowaCard(cornerRadius: 22)
     }
     
     /// 表示月を切り替える操作部を表示する。
@@ -181,8 +181,8 @@ struct RecordView: View {
             }
         }
         .foregroundStyle(.kokowaTeal)
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
         .background(Color.white.opacity(0.58), in: Capsule())
     }
     
@@ -192,7 +192,7 @@ struct RecordView: View {
         LazyVGrid(columns: viewModel.calendarColumns, spacing: 0) {
             ForEach(viewModel.weekdaySymbols, id: \.self) { weekday in
                 Text(weekday)
-                    .font(.subheadline.weight(.bold))
+                    .font(.caption.weight(.bold))
                     .foregroundStyle(.secondaryTextGray)
                     .frame(maxWidth: .infinity)
             }
@@ -202,7 +202,7 @@ struct RecordView: View {
     /// 月間カレンダーのグリッドを表示する。
     @ViewBuilder
     private func calendarGridView() -> some View {
-        LazyVGrid(columns: viewModel.calendarColumns, spacing: 8) {
+        LazyVGrid(columns: viewModel.calendarColumns, spacing: 6) {
             ForEach(viewModel.calendarDays()) { day in
                 calendarDayCell(day)
             }
@@ -216,7 +216,7 @@ struct RecordView: View {
             Button {
                 viewModel.selectDate(date)
             } label: {
-                VStack(spacing: 3) {
+                VStack(spacing: 2) {
                     Text(viewModel.dayNumberText(date))
                         .font(.caption.weight(.bold))
                         .foregroundStyle(viewModel.isSelectedDate(date) ? .white.opacity(0.78) : .secondaryTextGray)
@@ -228,31 +228,31 @@ struct RecordView: View {
                         .minimumScaleFactor(0.68)
                 }
                 .frame(maxWidth: .infinity)
-                .frame(height: 54)
+                .frame(height: 46)
                 .background(
                     viewModel.isSelectedDate(date)
                     ? Color.kokowaTeal
                     : calendarDayBackgroundColor(hasEntry: day.entry != nil),
-                    in: RoundedRectangle(cornerRadius: 15, style: .continuous)
+                    in: RoundedRectangle(cornerRadius: 13, style: .continuous)
                 )
             }
             .buttonStyle(.plain)
         } else {
             Color.clear
-                .frame(height: 54)
+                .frame(height: 46)
         }
     }
     
     /// 選択日の詳細カードを表示する。
     @ViewBuilder
     private func selectedDateDetailCardView() -> some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             Text(viewModel.selectedDateText)
                 .font(.headline.weight(.bold))
                 .foregroundStyle(.secondaryTextGray)
             
             if viewModel.hasSelectedEntry {
-                LazyVGrid(columns: viewModel.detailColumns, spacing: 10) {
+                LazyVGrid(columns: viewModel.detailColumns, spacing: 8) {
                     detailMetricView(icon: "heart.fill", value: viewModel.selectedMentalText, label: "メンタル", color: .kokowaRose)
                     detailMetricView(icon: "moon.fill", value: viewModel.selectedSleepText, label: "睡眠", color: .kokowaPeriwinkle)
                     detailMetricView(icon: "sun.max.fill", value: viewModel.selectedConditionText, label: "体調", color: .kokowaTeal)
@@ -263,22 +263,22 @@ struct RecordView: View {
                     .font(.headline.weight(.bold))
                     .foregroundStyle(.secondaryTextGray)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(20)
-                    .background(Color.white.opacity(0.56), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .padding(16)
+                    .background(Color.white.opacity(0.56), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
         }
-        .padding(14)
-        .background(Color.white.opacity(0.54), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .padding(12)
+        .background(Color.white.opacity(0.54), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
     
     /// 選択日詳細の1項目を表示する。
     @ViewBuilder
     private func detailMetricView(icon: String, value: String, label: String, color: Color) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             Image(systemName: icon)
                 .font(.caption.weight(.bold))
                 .foregroundStyle(color)
-                .frame(width: 34, height: 34)
+                .frame(width: 30, height: 30)
                 .background(color.opacity(0.14), in: Circle())
             
             Text(value)
@@ -292,8 +292,8 @@ struct RecordView: View {
                 .foregroundStyle(.secondaryTextGray)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
-        .background(Color.white.opacity(0.62), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .padding(10)
+        .background(Color.white.opacity(0.62), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
     
     /// 日付セルの背景色を返す。
