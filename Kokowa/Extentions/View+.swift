@@ -79,9 +79,9 @@ extension View {
     func KokowaBackground() -> some View {
             LinearGradient(
                 colors: [
-                    Color(red: 0.90, green: 0.97, blue: 0.95),
-                    Color(red: 0.99, green: 0.97, blue: 0.91),
-                    Color(red: 0.94, green: 0.98, blue: 0.97)
+                    .kokowaGrand1,
+                    .kokowaGrand2,
+                    .kokowaGrand3
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing

@@ -35,11 +35,11 @@ struct LoginView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Kokowa")
                 .font(.system(size: 44, weight: .bold, design: .rounded))
-                .foregroundStyle(KokowaStyle.primaryText)
+                .foregroundStyle(.primaryTextBlack)
 
             Text("あなたの心に寄り添う相棒を育てましょう")
                 .font(.headline)
-                .foregroundStyle(KokowaStyle.secondaryText)
+                .foregroundStyle(.secondaryTextGray)
                 .lineSpacing(4)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -56,8 +56,8 @@ struct LoginView: View {
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 17)
-                .background(KokowaStyle.teal, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .shadow(color: KokowaStyle.teal.opacity(0.28), radius: 18, x: 0, y: 10)
+                .background(.kokowaTeal, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .shadow(color: .kokowaTeal.opacity(0.28), radius: 18, x: 0, y: 10)
         }
     }
 }

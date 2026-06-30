@@ -37,11 +37,11 @@ struct CharacterNamingView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("名前をつける")
                 .font(.system(size: 34, weight: .bold, design: .rounded))
-                .foregroundStyle(KokowaStyle.primaryText)
+                .foregroundStyle(.primaryTextBlack)
 
             Text("これから一緒に過ごす相棒の名前を決めましょう")
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(KokowaStyle.secondaryText)
+                .foregroundStyle(.secondaryTextGray)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.top, 8)
@@ -52,13 +52,13 @@ struct CharacterNamingView: View {
     private func characterTextFieldView() -> some View {
         TextField("キャラに名前をつけてください", text: $viewModel.inputCharacterName)
             .font(.headline)
-            .foregroundStyle(KokowaStyle.primaryText)
+            .foregroundStyle(.primaryTextBlack)
             .padding(.horizontal, 18)
             .padding(.vertical, 16)
             .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(isFocused ? KokowaStyle.teal.opacity(0.65) : Color.white.opacity(0.9), lineWidth: 1)
+                    .stroke(isFocused ? .kokowaTeal.opacity(0.65) : Color.white.opacity(0.9), lineWidth: 1)
             )
             .focused($isFocused)
             .onChange(of: viewModel.inputCharacterName) { _, newValue in
@@ -84,7 +84,7 @@ struct CharacterNamingView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: DeviceModel.width * 0.58, height: DeviceModel.height * 0.34)
-                .shadow(color: KokowaStyle.teal.opacity(0.22), radius: 18, x: 0, y: 12)
+                .shadow(color: .kokowaTeal.opacity(0.22), radius: 18, x: 0, y: 12)
         }
     }
     
@@ -98,7 +98,7 @@ struct CharacterNamingView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 17)
                 .background(viewModel.completeButtonColor, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .shadow(color: KokowaStyle.teal.opacity(viewModel.isEnabledcompleteButton ? 0 : 0.26), radius: 18, x: 0, y: 10)
+                .shadow(color: .kokowaTeal.opacity(viewModel.isEnabledcompleteButton ? 0 : 0.26), radius: 18, x: 0, y: 10)
         }
         .disabled(viewModel.isEnabledcompleteButton)
     }

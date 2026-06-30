@@ -33,11 +33,11 @@ struct CharacterSelectedView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("相棒を選ぶ")
                 .font(.system(size: 34, weight: .bold, design: .rounded))
-                .foregroundStyle(KokowaStyle.primaryText)
+                .foregroundStyle(.primaryTextBlack)
 
             Text("一緒に心の記録を続けるキャラクターを選んでください")
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(KokowaStyle.secondaryText)
+                .foregroundStyle(.primaryTextBlack)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.top, 8)
@@ -49,7 +49,7 @@ struct CharacterSelectedView: View {
         VStack(spacing: 14) {
             Text("横にスワイプして選択")
                 .font(.caption.weight(.bold))
-                .foregroundStyle(KokowaStyle.secondaryText)
+                .foregroundStyle(.secondaryTextGray)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             TabView(selection: $viewModel.selectedCharacterIndex) {
@@ -67,11 +67,11 @@ struct CharacterSelectedView: View {
             VStack(spacing: 8) {
                 Text(viewModel.characters[viewModel.selectedCharacterIndex].name)
                     .font(.title2.weight(.bold))
-                    .foregroundStyle(KokowaStyle.primaryText)
+                    .foregroundStyle(.primaryTextBlack)
 
                 Text(viewModel.characters[viewModel.selectedCharacterIndex].explanation)
                     .font(.body.weight(.medium))
-                    .foregroundStyle(KokowaStyle.secondaryText)
+                    .foregroundStyle(.secondaryTextGray)
                     .multilineTextAlignment(.center)
                     .lineSpacing(4)
             }
@@ -94,8 +94,8 @@ struct CharacterSelectedView: View {
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 17)
-                .background(KokowaStyle.teal, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .shadow(color: KokowaStyle.teal.opacity(0.26), radius: 18, x: 0, y: 10)
+                .background(.kokowaTeal, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .shadow(color: .kokowaTeal.opacity(0.26), radius: 18, x: 0, y: 10)
         }
     }
 }

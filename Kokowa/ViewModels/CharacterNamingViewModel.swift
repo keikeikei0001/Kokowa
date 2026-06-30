@@ -27,7 +27,7 @@ class CharacterNamingViewModel: ObservableObject {
     }
     
     var completeButtonColor: Color {
-        return inputCharacterName.isEmpty ? KokowaStyle.secondaryText.opacity(0.38) : KokowaStyle.teal
+        return inputCharacterName.isEmpty ? .secondaryTextGray.opacity(0.38) : .kokowaTeal
     }
     
     init(characterId: String) {

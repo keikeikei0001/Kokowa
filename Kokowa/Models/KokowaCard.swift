@@ -14,12 +14,12 @@ struct KokowaCard: ViewModifier {
         content
             .background(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(KokowaStyle.card)
+                    .fill(.cordTransparentWhite)
                     .overlay(
                         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                             .stroke(Color.white.opacity(0.78), lineWidth: 1)
                     )
-                    .shadow(color: KokowaStyle.teal.opacity(0.13), radius: 24, x: 0, y: 12)
+                    .shadow(color: .kokowaTeal.opacity(0.13), radius: 24, x: 0, y: 12)
             )
     }
 }
