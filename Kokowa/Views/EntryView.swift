@@ -36,7 +36,7 @@ struct EntryView: View {
                         value: $viewModel.sleepHours,
                         range: 0.0...12.0,
                         step: 0.5,
-                        color: Color(red: 0.42, green: 0.50, blue: 0.75)
+                        color: .kokowaPeriwinkle
                     )
                     conditionCardView()
                     gratitudeCardView()
@@ -102,7 +102,7 @@ struct EntryView: View {
                     .font(.system(size: 38, weight: .bold))
                     .foregroundStyle(.kokowaRose)
                     .frame(width: 88, height: 88)
-                    .background(Color.white.opacity(0.72), in: Circle())
+                    .background(.kokowaRose.opacity(0.14), in: Circle())
             }
 
             HStack(spacing: 14) {
@@ -110,7 +110,7 @@ struct EntryView: View {
                     icon: "moon.fill",
                     title: "睡眠",
                     value: viewModel.sleepHoursShortText,
-                    color: Color(red: 0.42, green: 0.50, blue: 0.75)
+                    color: .kokowaPeriwinkle
                 )
                 miniSummaryView(
                     icon: viewModel.selectedCondition.iconName,
@@ -247,7 +247,7 @@ struct EntryView: View {
             HStack(alignment: .top, spacing: 14) {
                 Image(systemName: "hands.sparkles.fill")
                     .font(.title3.weight(.bold))
-                    .foregroundStyle(Color(red: 0.82, green: 0.48, blue: 0.26))
+                    .foregroundStyle(.kokowaTerracotta)
                     .frame(width: 54, height: 54)
                     .background(Color(red: 0.82, green: 0.48, blue: 0.26).opacity(0.13), in: Circle())
 
@@ -266,7 +266,7 @@ struct EntryView: View {
                     .font(.headline.weight(.bold))
                     .foregroundStyle(Color(red: 0.82, green: 0.48, blue: 0.26))
                     .frame(width: 46, height: 46)
-                    .background(Color(red: 0.82, green: 0.48, blue: 0.26).opacity(0.12), in: Circle())
+                    .background(.kokowaTerracotta.opacity(0.12), in: Circle())
 
                 TextField("ありがとうと思えたこと", text: $viewModel.gratitudeText)
                     .font(.headline)

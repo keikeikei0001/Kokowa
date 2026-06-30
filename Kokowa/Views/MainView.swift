@@ -40,7 +40,7 @@ struct MainView: View {
                     Spacer()
                     messageView()
                     characterImageView(sceneHeight: proxy.size.height)
-                        .padding(.bottom, 20)
+                        .padding(.bottom, 35)
                 }
             }
         }
@@ -89,8 +89,8 @@ struct MainView: View {
             HStack(spacing: 12) {
                 statusPill(
                     icon: "bolt.heart.fill",
-                    title: viewModel.characterHpText,
-                    subtitle: "HP",
+                    title: viewModel.characterMentalText,
+                    subtitle: "メンタル",
                     color: .kokowaTeal
                 )
 
@@ -101,8 +101,6 @@ struct MainView: View {
                     color: .kokowaRose
                 )
             }
-
-            progressBar(value: viewModel.expRatio, color: .kokowaTeal)
         }
         .padding(24)
         .background(
@@ -198,8 +196,6 @@ struct MainView: View {
         HStack {
             Spacer()
             naviLinkButtonView("square.and.pencil", title: "記入", AnyView(EntryView()))
-            Spacer()
-            naviLinkButtonView("calendar", title: "予定", AnyView(CalendarView()))
             Spacer()
             naviLinkButtonView("gear", title: "設定", AnyView(SettingView()))
             Spacer()

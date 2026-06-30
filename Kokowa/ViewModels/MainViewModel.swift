@@ -12,47 +12,34 @@ struct MainCharacterState {
     var name = "ウルフねこ"
     var imageName = "uruhuneko0001"
     var level = 1
-    var experiencePoint = 0
-    var nextLevelExperience = 10
-    var currentHealthPoint: Double = 8
-    var maxHealthPoint: Double = 10
+    var experiencePoint = 10
+    var levelUpNeedExperience = 10
 }
 
-struct MainCharacterMotion {
-    var jumpOffset: CGFloat = 0
-    var shadowScale: CGFloat = 1
-    var rotationAngle: Double = 0
-    var showMessage = false
+struct UserData {
+    var currentMentalPoint = 8.0
+    var mainCharacterState = MainCharacterState()
 }
 
 class MainViewModel: ObservableObject {
     @Published var character = MainCharacterState()
+    @Published var userData = UserData()
     @Published var motion = MainCharacterMotion()
     @Published var alert: AlertContext?
 
-    var hpRatio: Double {
-        guard character.maxHealthPoint > 0 else { return 0 }
-        return character.currentHealthPoint / character.maxHealthPoint
-    }
-
-    var expRatio: Double {
-        guard character.nextLevelExperience > 0 else { return 0 }
-        return Double(character.experiencePoint) / Double(character.nextLevelExperience)
-    }
-
     var characterExpText: String {
-        "\(character.experiencePoint) / \(character.nextLevelExperience)"
+        "\(character.experiencePoint) / \(character.levelUpNeedExperience)"
     }
 
-    var characterHpText: String {
-        "\(Int(character.currentHealthPoint)) / \(Int(character.maxHealthPoint))"
+    var characterMentalText: String {
+        "\(userData.currentMentalPoint)"
     }
 
     var characterImageSize: CGFloat {
         if character.imageName == "usaneko0001" {
-            return DeviceModel.width / 1.45
+            return DeviceModel.width / 1.93
         }
-        return DeviceModel.width / 1.35
+        return DeviceModel.width / 1.8
     }
 
     var characterMessageOpacity: Double {
