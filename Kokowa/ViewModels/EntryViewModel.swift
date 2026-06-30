@@ -60,9 +60,24 @@ final class EntryViewModel: ObservableObject {
         isTodayEntrySaved ? "変更" : "保存"
     }
 
+    /// 保存ボタンの背景色を返す。
+    var saveButtonColor: Color {
+        isTodayEntrySaved ? .kokowaRose : .kokowaTeal
+    }
+
+    /// 保存ボタンの影色を返す。
+    var saveButtonShadowColor: Color {
+        saveButtonColor.opacity(0.24)
+    }
+
     /// メモ欄のプレースホルダーを表示するか判定する。
     var shouldShowMemoPlaceholder: Bool {
         memoText.isEmpty
+    }
+
+    /// 感謝欄の高さを返す。
+    var gratitudeFieldHeight: CGFloat {
+        64
     }
 
     /// 感謝の新規入力欄を表示するか判定する。

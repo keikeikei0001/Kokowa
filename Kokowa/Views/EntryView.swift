@@ -395,9 +395,11 @@ struct EntryView: View {
                 .frame(width: 46, height: 46)
                 .background(.kokowaTerracotta.opacity(0.12), in: Circle())
 
-            TextField("ありがとうと思えたこと", text: $viewModel.gratitudeDraftText)
+            TextField("ありがとうと思えたこと", text: $viewModel.gratitudeDraftText, axis: .vertical)
                 .font(.headline)
                 .foregroundStyle(.primaryTextBlack)
+                .lineLimit(2, reservesSpace: true)
+                .frame(minHeight: viewModel.gratitudeFieldHeight)
                 .textInputAutocapitalization(.never)
                 .submitLabel(.done)
                 .onSubmit(viewModel.commitGratitudeDraftIfNeeded)
@@ -420,16 +422,15 @@ struct EntryView: View {
             TextField(
                 "ありがとうと思えたこと",
                 text: Binding(
-                    get: {
-                        viewModel.gratitudeTexts[index]
-                    },
-                    set: { newValue in
-                        viewModel.updateGratitudeText(at: index, text: newValue)
-                    }
-                )
+                    get: { viewModel.gratitudeTexts[index] },
+                    set: { viewModel.updateGratitudeText(at: index, text: $0) }
+                ),
+                axis: .vertical
             )
             .font(.headline)
             .foregroundStyle(.primaryTextBlack)
+            .lineLimit(2, reservesSpace: true)
+            .frame(minHeight: viewModel.gratitudeFieldHeight)
             .textInputAutocapitalization(.never)
         }
         .padding(.horizontal, 16)
@@ -495,8 +496,8 @@ struct EntryView: View {
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 22)
-            .background(.kokowaTeal, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-            .shadow(color: .kokowaTeal.opacity(0.24), radius: 18, x: 0, y: 10)
+            .background(viewModel.saveButtonColor, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .shadow(color: viewModel.saveButtonShadowColor, radius: 18, x: 0, y: 10)
         }
         .buttonStyle(.plain)
     }
