@@ -99,14 +99,14 @@ struct MainView: View {
                     icon: "bolt.heart.fill",
                     title: viewModel.characterMentalText,
                     subtitle: "メンタル",
-                    color: .kokowaTeal
+                    color: .kokowaRose
                 )
 
                 statusPill(
                     icon: "sparkles",
                     title: viewModel.characterExpText,
                     subtitle: "EXP",
-                    color: .kokowaRose
+                    color: .kokowaTeal
                 )
             }
         }
