@@ -15,20 +15,19 @@ final class EntryViewModel: ObservableObject {
     @Published var sleepHours = 9.5
     @Published var selectedCondition: EntryCondition = .good
     @Published var selectedStressLevel: StressLevel = .normal
-    @Published var gratitudeDraftText = ""
-    @Published var gratitudeTexts: [String] = []
+    @Published var gratitudeTexts = Array(repeating: "", count: EntryViewModel.maxGratitudeCount)
     @Published var memoText = ""
     @Published var isTodayEntrySaved = false
     @Published var isKeyboardVisible = false
-    
+
     private let dateHelper = DateHelper()
+    private static let maxGratitudeCount = 3
     private var userId: String?
     private var mentalEntryRepository: MentalEntryRepository?
     private var characterRepository: CharacterRepository?
     private var userProfileRepository: UserProfileRepository?
 
     private let saveExperiencePoint = 5
-    private let maxGratitudeCount = 3
 
     /// 今日の日付表示用テキストを返す。
     var todayText: String {
@@ -80,14 +79,14 @@ final class EntryViewModel: ObservableObject {
         64
     }
 
-    /// 感謝の新規入力欄を表示するか判定する。
-    var shouldShowGratitudeDraftField: Bool {
-        gratitudeTexts.count < maxGratitudeCount
+    /// 感謝欄として表示する番号の範囲を返す。
+    var gratitudeFieldIndices: Range<Int> {
+        0..<Self.maxGratitudeCount
     }
 
     /// 感謝の入力済み件数を返す。
     var gratitudeCountText: String {
-        "\(gratitudeValues().count) / \(maxGratitudeCount)"
+        "\(gratitudeValues().count) / \(Self.maxGratitudeCount)"
     }
 
     /// スコアバーの表示進捗を返す。
@@ -161,15 +160,6 @@ final class EntryViewModel: ObservableObject {
         selectedStressLevel = stressLevel
     }
 
-    /// 新しく入力した感謝を入力済みリストの先頭へ移す。
-    func commitGratitudeDraftIfNeeded() {
-        let trimmedText = gratitudeDraftText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmedText.isEmpty == false, gratitudeTexts.count < maxGratitudeCount else { return }
-
-        gratitudeTexts.insert(trimmedText, at: 0)
-        gratitudeDraftText = ""
-    }
-
     /// 指定した位置の感謝テキストを更新する。
     func updateGratitudeText(at index: Int, text: String) {
         guard gratitudeTexts.indices.contains(index) else { return }
@@ -229,8 +219,7 @@ final class EntryViewModel: ObservableObject {
             sleepHours = entry.sleepHours
             selectedCondition = entry.condition
             selectedStressLevel = entry.stressLevel
-            gratitudeDraftText = ""
-            gratitudeTexts = Array(entry.gratitude.prefix(maxGratitudeCount))
+            gratitudeTexts = fixedGratitudeTexts(from: entry.gratitude)
             memoText = entry.memo
             isTodayEntrySaved = true
         } catch {
@@ -240,11 +229,16 @@ final class EntryViewModel: ObservableObject {
 
     /// 空欄を除いた感謝リストを返す。
     private func gratitudeValues() -> [String] {
-        let draftValues = [gratitudeDraftText]
-        return (draftValues + gratitudeTexts)
+        gratitudeTexts
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { $0.isEmpty == false }
-            .prefix(maxGratitudeCount)
+            .prefix(Self.maxGratitudeCount)
             .map { $0 }
+    }
+
+    /// 保存済みの感謝を3つの入力欄に収まる形へ整える。
+    private func fixedGratitudeTexts(from values: [String]) -> [String] {
+        let savedValues = Array(values.prefix(Self.maxGratitudeCount))
+        return savedValues + Array(repeating: "", count: Self.maxGratitudeCount - savedValues.count)
     }
 }

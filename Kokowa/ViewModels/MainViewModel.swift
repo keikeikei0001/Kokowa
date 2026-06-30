@@ -69,11 +69,6 @@ class MainViewModel: ObservableObject {
         motion.showMessage ? 1 : 0
     }
 
-    /// 画面表示時に必要な初期データを読み込む。
-    func handleOnAppear() {
-        loadInitialCharacter()
-    }
-
     /// 表示に必要なリポジトリをセットする。
     func configure(modelContext: ModelContext, userId: String?) {
         self.userId = userId

@@ -13,7 +13,6 @@ struct EntryView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var authManager: AuthManager
     @StateObject private var viewModel = EntryViewModel()
-    @FocusState private var isGratitudeDraftFocused: Bool
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -374,59 +373,19 @@ struct EntryView: View {
                 }
             }
 
-            if viewModel.shouldShowGratitudeDraftField {
-                gratitudeDraftFieldView()
-            }
-
-            ForEach(viewModel.gratitudeTexts.indices, id: \.self) { index in
-                gratitudeSavedFieldView(index: index)
+            ForEach(viewModel.gratitudeFieldIndices, id: \.self) { index in
+                gratitudeFieldView(index: index)
             }
         }
         .padding(22)
         .kokowaCard(cornerRadius: 24)
     }
 
-    /// 感謝カードの新規入力欄を表示する。
+    /// 感謝カードの入力欄を表示する。
     @ViewBuilder
-    private func gratitudeDraftFieldView() -> some View {
+    private func gratitudeFieldView(index: Int) -> some View {
         HStack(spacing: 12) {
-            Text("1")
-                .font(.headline.weight(.bold))
-                .foregroundStyle(.kokowaTerracotta)
-                .frame(width: 46, height: 46)
-                .background(.kokowaTerracotta.opacity(0.12), in: Circle())
-
-            TextField("ありがとうと思えたこと", text: $viewModel.gratitudeDraftText, axis: .vertical)
-                .font(.headline)
-                .foregroundStyle(.primaryTextBlack)
-                .lineLimit(2, reservesSpace: true)
-                .frame(minHeight: viewModel.gratitudeFieldHeight)
-                .textInputAutocapitalization(.never)
-                .submitLabel(.done)
-                .focused($isGratitudeDraftFocused)
-                .onSubmit(commitGratitudeDraftAndFocusNextField)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
-        .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-    }
-
-    /// 感謝の入力を確定し、次の空欄へ続けて入力できる状態にする。
-    private func commitGratitudeDraftAndFocusNextField() {
-        viewModel.commitGratitudeDraftIfNeeded()
-
-        guard viewModel.shouldShowGratitudeDraftField else { return }
-
-        DispatchQueue.main.async {
-            isGratitudeDraftFocused = true
-        }
-    }
-
-    /// 感謝カードの入力済み欄を表示する。
-    @ViewBuilder
-    private func gratitudeSavedFieldView(index: Int) -> some View {
-        HStack(spacing: 12) {
-            Text("\(index + gratitudeSavedFieldNumberOffset())")
+            Text("\(index + 1)")
                 .font(.headline.weight(.bold))
                 .foregroundStyle(.kokowaTerracotta)
                 .frame(width: 46, height: 46)
@@ -449,11 +408,6 @@ struct EntryView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
         .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-    }
-
-    /// 入力済み感謝欄の表示番号に使う開始位置を返す。
-    private func gratitudeSavedFieldNumberOffset() -> Int {
-        viewModel.shouldShowGratitudeDraftField ? 2 : 1
     }
 
     /// 今日感じたことを自由に残すメモ欄。

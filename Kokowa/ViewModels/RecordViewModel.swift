@@ -105,6 +105,28 @@ class RecordViewModel: ObservableObject {
         selectedEntry?.stressLevel.title ?? "ー"
     }
 
+    /// 選択日の感謝リストを返す。
+    var selectedGratitudeTexts: [String] {
+        selectedEntry?.gratitude
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { $0.isEmpty == false } ?? []
+    }
+
+    /// 選択日に表示できる感謝があるか判定する。
+    var hasSelectedGratitude: Bool {
+        selectedGratitudeTexts.isEmpty == false
+    }
+
+    /// 選択日のメモを返す。
+    var selectedMemoText: String {
+        selectedEntry?.memo.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+    }
+
+    /// 選択日に表示できるメモがあるか判定する。
+    var hasSelectedMemo: Bool {
+        selectedMemoText.isEmpty == false
+    }
+
     /// 選択日に記録があるか判定する。
     var hasSelectedEntry: Bool {
         selectedEntry != nil

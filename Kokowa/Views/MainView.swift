@@ -152,22 +152,6 @@ struct MainView: View {
         .background(Color.white.opacity(0.55), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
-    /// 数値の進捗を横長バーで表示する。
-    @ViewBuilder
-    private func progressBar(value: Double, color: Color) -> some View {
-        GeometryReader { proxy in
-            ZStack(alignment: .leading) {
-                Capsule()
-                    .fill(.kokowaMint.opacity(0.64))
-
-                Capsule()
-                    .fill(color)
-                    .frame(width: proxy.size.width * min(max(value, 0), 1))
-            }
-        }
-        .frame(height: 12)
-    }
-
     /// キャラクターからの短いメッセージを表示する。
     @ViewBuilder
     private func messageView() -> some View {

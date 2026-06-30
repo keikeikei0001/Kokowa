@@ -258,6 +258,9 @@ struct RecordView: View {
                     detailMetricView(icon: "sun.max.fill", value: viewModel.selectedConditionText, label: "体調", color: .kokowaTeal)
                     detailMetricView(icon: "waveform.path.ecg", value: viewModel.selectedStressText, label: "ストレス", color: .kokowaRose)
                 }
+
+                selectedGratitudeView()
+                selectedMemoView()
             } else {
                 Text("この日の記録はまだありません")
                     .font(.headline.weight(.bold))
@@ -269,6 +272,81 @@ struct RecordView: View {
         }
         .padding(12)
         .background(Color.white.opacity(0.54), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    /// 選択日の感謝リストを表示する。
+    @ViewBuilder
+    private func selectedGratitudeView() -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            detailSectionTitleView(icon: "hands.sparkles.fill", title: "感謝", color: .kokowaTerracotta)
+
+            if viewModel.hasSelectedGratitude {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(Array(viewModel.selectedGratitudeTexts.enumerated()), id: \.offset) { index, gratitude in
+                        HStack(alignment: .top, spacing: 10) {
+                            Text("\(index + 1)")
+                                .font(.caption.weight(.bold))
+                                .foregroundStyle(.kokowaTerracotta)
+                                .frame(width: 24, height: 24)
+                                .background(.kokowaTerracotta.opacity(0.12), in: Circle())
+
+                            Text(gratitude)
+                                .font(.subheadline.weight(.bold))
+                                .foregroundStyle(.primaryTextBlack)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+            } else {
+                emptyDetailTextView("感謝はまだありません")
+            }
+        }
+        .padding(12)
+        .background(Color.white.opacity(0.62), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+
+    /// 選択日のメモを表示する。
+    @ViewBuilder
+    private func selectedMemoView() -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            detailSectionTitleView(icon: "text.bubble.fill", title: "メモ", color: .kokowaTeal)
+
+            if viewModel.hasSelectedMemo {
+                Text(viewModel.selectedMemoText)
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(.primaryTextBlack)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                emptyDetailTextView("メモはまだありません")
+            }
+        }
+        .padding(12)
+        .background(Color.white.opacity(0.62), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+
+    /// 詳細欄の見出しを表示する。
+    @ViewBuilder
+    private func detailSectionTitleView(icon: String, title: String, color: Color) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.footnote.weight(.bold))
+                .foregroundStyle(color)
+                .frame(width: 26, height: 26)
+                .background(color.opacity(0.14), in: Circle())
+
+            Text(title)
+                .font(.footnote.weight(.bold))
+                .foregroundStyle(.secondaryTextGray)
+        }
+    }
+
+    /// 詳細欄に表示する空状態テキストを返す。
+    @ViewBuilder
+    private func emptyDetailTextView(_ text: String) -> some View {
+        Text(text)
+            .font(.subheadline.weight(.bold))
+            .foregroundStyle(.secondaryTextGray)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     /// 選択日詳細の1項目を表示する。
@@ -288,7 +366,7 @@ struct RecordView: View {
                 .minimumScaleFactor(0.72)
             
             Text(label)
-                .font(.caption.weight(.bold))
+                .font(.footnote.weight(.bold))
                 .foregroundStyle(.secondaryTextGray)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
