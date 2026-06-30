@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Combine
+import SwiftData
 
 struct MainCharacterState {
     var name = "ウルフねこ"
@@ -17,7 +18,7 @@ struct MainCharacterState {
 }
 
 struct UserData {
-    var currentMentalPoint = 8.0
+    var currentMentalPoint: Double?
     var mainCharacterState = MainCharacterState()
 }
 
@@ -27,14 +28,24 @@ class MainViewModel: ObservableObject {
     @Published var motion = MainCharacterMotion()
     @Published var alert: AlertContext?
 
+    private var userId: String?
+    private var characterRepository: CharacterRepository?
+    private var userProfileRepository: UserProfileRepository?
+
+    /// キャラクターの経験値表示用テキストを返す。
     var characterExpText: String {
         "\(character.experiencePoint) / \(character.levelUpNeedExperience)"
     }
 
+    /// ユーザーの現在メンタル値を表示用テキストで返す。
     var characterMentalText: String {
-        "\(userData.currentMentalPoint)"
+        guard let currentMentalPoint = userData.currentMentalPoint else {
+            return "ー"
+        }
+        return "\(currentMentalPoint)"
     }
 
+    /// キャラクター画像の表示幅を返す。
     var characterImageSize: CGFloat {
         if character.imageName == "usaneko0001" {
             return DeviceModel.width / 1.93
@@ -42,14 +53,29 @@ class MainViewModel: ObservableObject {
         return DeviceModel.width / 1.8
     }
 
+    /// キャラクターのメッセージを表示する透明度を返す。
     var characterMessageOpacity: Double {
         motion.showMessage ? 1 : 0
     }
 
+    /// 画面表示時に必要な初期データを読み込む。
     func handleOnAppear() {
         loadInitialCharacter()
     }
 
+    /// 表示に必要なリポジトリをセットする。
+    func configure(modelContext: ModelContext, userId: String?) {
+        self.userId = userId
+        let userProfileRepository = LocalUserProfileRepository(modelContext: modelContext)
+        self.userProfileRepository = userProfileRepository
+        self.characterRepository = LocalCharacterRepository(
+            modelContext: modelContext,
+            userProfileRepository: userProfileRepository
+        )
+        loadInitialCharacter()
+    }
+
+    /// キャラクター画像タップ時のリアクションを実行する。
     func handleCharacterImageTap() {
         if Bool.random() {
             occurCharacterTiltEffect()
@@ -58,11 +84,46 @@ class MainViewModel: ObservableObject {
         }
     }
 
-    private func loadInitialCharacter() {
-        // TODO: キャラクター保存処理を作ったら、ここで保存済みデータを読み込む。
-        character = MainCharacterState()
+    /// キャラクターの影の縦位置を返す。
+    func characterShadowOffsetY(sceneHeight: CGFloat) -> CGFloat {
+        min(sceneHeight * 0.19, 96)
     }
 
+    /// 初期表示用のキャラクター情報を読み込む。
+    private func loadInitialCharacter() {
+        guard
+            let userId,
+            let characterRepository,
+            let userProfileRepository
+        else {
+            character = MainCharacterState()
+            return
+        }
+
+        do {
+            if let activeCharacter = try characterRepository.fetchActiveCharacter(userId: userId) {
+                let master = CharacterMasterStore.character(id: activeCharacter.characterId)
+                character = MainCharacterState(
+                    name: activeCharacter.name,
+                    imageName: master?.imageName ?? activeCharacter.characterId,
+                    level: activeCharacter.level,
+                    experiencePoint: activeCharacter.experiencePoint,
+                    levelUpNeedExperience: characterRepository.requiredExperience(for: activeCharacter.level)
+                )
+            }
+
+            if let todayMental = try userProfileRepository.fetchUserProfile(userId: userId)?.todayMental {
+                userData.currentMentalPoint = todayMental
+            } else {
+                userData.currentMentalPoint = nil
+            }
+        } catch {
+            character = MainCharacterState()
+            userData.currentMentalPoint = nil
+        }
+    }
+
+    /// キャラクターが左右に揺れる演出を実行する。
     private func occurCharacterTiltEffect() {
         let tiltAngle: Double = 5
         let stepDuration: TimeInterval = 0.1
@@ -92,6 +153,7 @@ class MainViewModel: ObservableObject {
         }
     }
 
+    /// キャラクターがジャンプする演出を実行する。
     private func occurCharacterJumpEffect() {
         let jumpHeight: CGFloat = -34
         let upDuration: TimeInterval = 0.18

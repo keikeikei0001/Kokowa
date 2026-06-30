@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct KokowaApp: App {
@@ -17,5 +18,10 @@ struct KokowaApp: App {
                 .environmentObject(authManager)
                 .preferredColorScheme(.light)
         }
+        .modelContainer(for: [
+            UserProfile.self,
+            OwnedCharacter.self,
+            MentalEntry.self
+        ])
     }
 }

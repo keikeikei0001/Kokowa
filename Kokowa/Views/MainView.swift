@@ -6,8 +6,11 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct MainView: View {
+    @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject var authManager: AuthManager
     @StateObject private var viewModel = MainViewModel()
 
     var body: some View {
@@ -18,10 +21,13 @@ struct MainView: View {
             }
             .ignoresSafeArea(edges: .top)
             .alert($viewModel.alert)
-            .onAppear(perform: viewModel.handleOnAppear)
+            .onAppear {
+                viewModel.configure(modelContext: modelContext, userId: authManager.userId)
+            }
         }
     }
 
+    /// 背景・ステータス・メッセージ・キャラクターを重ねて表示する。
     @ViewBuilder
     private func characterWorldView() -> some View {
         GeometryReader { proxy in
@@ -46,6 +52,7 @@ struct MainView: View {
         }
     }
 
+    /// メイン画面の背景画像を表示する。
     @ViewBuilder
     private func mainBackgroundView(size: CGSize) -> some View {
         Image("mainBackgroundImage")
@@ -55,6 +62,7 @@ struct MainView: View {
             .clipped()
     }
 
+    /// キャラクター名・レベル・ステータスを表示するカード。
     @ViewBuilder
     private func characterStatusCardView() -> some View {
         VStack(spacing: 18) {
@@ -114,6 +122,7 @@ struct MainView: View {
         )
     }
 
+    /// ステータスカード内の小さな情報表示を作る。
     @ViewBuilder
     private func statusPill(icon: String, title: String, subtitle: String, color: Color) -> some View {
         HStack(spacing: 12) {
@@ -143,6 +152,7 @@ struct MainView: View {
         .background(Color.white.opacity(0.55), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
+    /// 数値の進捗を横長バーで表示する。
     @ViewBuilder
     private func progressBar(value: Double, color: Color) -> some View {
         GeometryReader { proxy in
@@ -158,6 +168,7 @@ struct MainView: View {
         .frame(height: 12)
     }
 
+    /// キャラクターからの短いメッセージを表示する。
     @ViewBuilder
     private func messageView() -> some View {
         Text("君は天才だニャン！")
@@ -171,13 +182,14 @@ struct MainView: View {
             .padding(.bottom, 10)
     }
 
+    /// キャラクター画像と影を表示する。
     @ViewBuilder
     private func characterImageView(sceneHeight: CGFloat) -> some View {
         ZStack {
             Ellipse()
                 .fill(Color.black.opacity(0.20))
                 .frame(width: 180 * viewModel.motion.shadowScale, height: 34 * viewModel.motion.shadowScale)
-                .offset(y: min(sceneHeight * 0.19, 96))
+                .offset(y: viewModel.characterShadowOffsetY(sceneHeight: sceneHeight))
 
             Image(viewModel.character.imageName)
                 .resizable()

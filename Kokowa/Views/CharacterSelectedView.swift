@@ -65,11 +65,11 @@ struct CharacterSelectedView: View {
             .frame(height: DeviceModel.height * 0.34)
             
             VStack(spacing: 8) {
-                Text(viewModel.characters[viewModel.selectedCharacterIndex].name)
+                Text(viewModel.selectedCharacterName)
                     .font(.title2.weight(.bold))
                     .foregroundStyle(.primaryTextBlack)
 
-                Text(viewModel.characters[viewModel.selectedCharacterIndex].explanation)
+                Text(viewModel.selectedCharacterExplanation)
                     .font(.body.weight(.medium))
                     .foregroundStyle(.secondaryTextGray)
                     .multilineTextAlignment(.center)
@@ -86,7 +86,7 @@ struct CharacterSelectedView: View {
     private func nextPageButtonView() -> some View {
         NavigationLink(destination: CharacterNamingView(
             viewModel: CharacterNamingViewModel(
-                characterId: viewModel.characters[viewModel.selectedCharacterIndex].imageName
+                characterId: viewModel.selectedCharacterImageName
             )
         )) {
             Text("次へ")
@@ -99,4 +99,3 @@ struct CharacterSelectedView: View {
         }
     }
 }
-

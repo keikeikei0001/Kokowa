@@ -10,33 +10,54 @@ import Combine
 
 class AuthManager: ObservableObject {
     @Published var isSignedIn = false
-    @Published var isNewUser = false
     @Published var userId: String?
+
+    private enum UserDefaultsKey {
+        static let isSignedIn = "isSignedIn"
+    }
+
     private let keychainRepository = KeychainRepository()
     
+    /// 保存済みのログイン状態とユーザーIDを復元する。
     init() {
-        if let identifier = keychainRepository.loadFromKeychain() {
-            DispatchQueue.main.async {
-                self.userId = identifier
-                self.isSignedIn = true
-            }
+        userId = keychainRepository.loadFromKeychain()
+        isSignedIn = UserDefaults.standard.bool(forKey: UserDefaultsKey.isSignedIn)
+    }
+
+    /// ログイン済みだがユーザーIDが未作成か判定する。
+    var needsInitialUserSetup: Bool {
+        isSignedIn && userId == nil
+    }
+
+    /// ログイン状態だけを保存する。
+    func SignIn() {
+        DispatchQueue.main.async {
+            UserDefaults.standard.set(true, forKey: UserDefaultsKey.isSignedIn)
+            self.isSignedIn = true
         }
     }
     
+    /// 指定したユーザーIDを保存してログイン状態にする。
     func SignIn(userId: String) {
         keychainRepository.saveToKeychain(userIdentifier: userId)
         DispatchQueue.main.async {
+            UserDefaults.standard.set(true, forKey: UserDefaultsKey.isSignedIn)
             self.userId = userId
             self.isSignedIn = true
         }
     }
     
+    /// ログイン状態だけを解除する。
     func SignOut() {
+        UserDefaults.standard.set(false, forKey: UserDefaultsKey.isSignedIn)
         self.isSignedIn = false
-        self.isNewUser = false
+    }
+
+    /// ログイン状態と保存済みユーザーIDを削除する。
+    func DeleteAccount() {
+        UserDefaults.standard.set(false, forKey: UserDefaultsKey.isSignedIn)
+        self.isSignedIn = false
         self.userId = nil
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-            self.keychainRepository.deleteFromKeychain()
-        }
+        keychainRepository.deleteFromKeychain()
     }
 }

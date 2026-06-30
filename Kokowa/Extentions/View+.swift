@@ -8,6 +8,7 @@
 import SwiftUI
 
 extension View {
+    /// AlertContextを使った共通アラートを表示する。
     @ViewBuilder
     func alert(_ context: Binding<AlertContext?>) -> some View {
         let isPresented = Binding<Bool> {
@@ -33,6 +34,7 @@ extension View {
         }
     }
     
+    /// アラート形式の日付ピッカーを表示する。
     @ViewBuilder
     func alertDatePicker(isPresented: Binding<Bool>, selectedDate: Binding<Date?>) -> some View {
         self.overlay(
@@ -43,6 +45,7 @@ extension View {
         )
     }
     
+    /// 指定した2色のグラデーション背景を設定する。
     @ViewBuilder
     func gradientBackgroundColor(
         _ colorTop: Color,
@@ -60,10 +63,12 @@ extension View {
 }
 
 extension View {
+    /// Kokowa共通のカード背景を適用する。
     func kokowaCard(cornerRadius: CGFloat = 24) -> some View {
         modifier(KokowaCard(cornerRadius: cornerRadius))
     }
 
+    /// 画面タップ時にキーボードを閉じる。
     func hideKeyboardOnTap() -> some View {
         onTapGesture {
             UIApplication.shared.sendAction(
@@ -75,6 +80,7 @@ extension View {
         }
     }
     
+    /// アプリ共通の背景グラデーションを表示する。
     @ViewBuilder
     func KokowaBackground() -> some View {
             LinearGradient(
@@ -89,5 +95,4 @@ extension View {
             .ignoresSafeArea()
         }
 }
-
 

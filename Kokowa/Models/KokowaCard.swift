@@ -10,6 +10,7 @@ import SwiftUI
 struct KokowaCard: ViewModifier {
     var cornerRadius: CGFloat = 24
 
+    /// 共通カードの背景・枠線・影を適用する。
     func body(content: Content) -> some View {
         content
             .background(

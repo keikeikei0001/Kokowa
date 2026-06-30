@@ -6,16 +6,20 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct EntryView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject var authManager: AuthManager
     @StateObject private var viewModel = EntryViewModel()
+    @State private var isKeyboardVisible = false
 
     var body: some View {
         ZStack(alignment: .bottom) {
             KokowaBackground()
 
-            /// 入力項目が縦に長くなるため、画面全体をスクロール可能にする。
+            // 入力項目が縦に長くなるため、画面全体をスクロール可能にする。
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 22) {
                     headerView()
@@ -39,6 +43,7 @@ struct EntryView: View {
                         color: .kokowaPeriwinkle
                     )
                     conditionCardView()
+                    stressLevelCardView()
                     gratitudeCardView()
                     memoCardView()
                     saveButtonView()
@@ -48,11 +53,22 @@ struct EntryView: View {
                 .padding(.bottom, 132)
             }
 
-            /// このアプリでは通常のタブ欄を使わず、ここではメイン画面へ戻る導線だけを置く。
-            returnButtonView()
+            // このアプリでは通常のタブ欄を使わず、ここではホーム画面へ戻る導線だけを置く。
+            if isKeyboardVisible == false {
+                returnButtonView()
+            }
         }
         .navigationBarBackButtonHidden(true)
         .hideKeyboardOnTap()
+        .onAppear {
+            viewModel.configure(modelContext: modelContext, userId: authManager.userId)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
+            isKeyboardVisible = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            isKeyboardVisible = false
+        }
     }
 
     /// 日付・画面タイトル・補足文を表示するヘッダー。
@@ -182,11 +198,57 @@ struct EntryView: View {
                     .foregroundStyle(.primaryTextBlack)
             }
 
-            Slider(value: value, in: range, step: step)
-                .tint(color)
+            tappableScoreSlider(value: value, range: range, step: step, color: color)
         }
         .padding(22)
         .kokowaCard(cornerRadius: 24)
+    }
+
+    /// バー上のどこを触っても値を変更できるスライダーを表示する。
+    @ViewBuilder
+    private func tappableScoreSlider(
+        value: Binding<Double>,
+        range: ClosedRange<Double>,
+        step: Double,
+        color: Color
+    ) -> some View {
+        GeometryReader { proxy in
+            let progress = viewModel.scoreProgress(value: value.wrappedValue, range: range)
+
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(.kokowaMint.opacity(0.64))
+                    .frame(height: 16)
+
+                Capsule()
+                    .fill(color)
+                    .frame(width: proxy.size.width * progress, height: 16)
+
+                Circle()
+                    .fill(.white)
+                    .frame(width: 30, height: 30)
+                    .shadow(color: color.opacity(0.28), radius: 8, x: 0, y: 4)
+                    .overlay(
+                        Circle()
+                            .stroke(color, lineWidth: 4)
+                    )
+                    .offset(x: max(0, (proxy.size.width - 30) * progress))
+            }
+            .frame(height: 34)
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { gesture in
+                        value.wrappedValue = viewModel.scoreValue(
+                            locationX: gesture.location.x,
+                            trackWidth: proxy.size.width,
+                            range: range,
+                            step: step
+                        )
+                    }
+            )
+        }
+        .frame(height: 34)
     }
 
     /// 体調を4択で選ぶカード。選択中の項目だけミント色で強調する。
@@ -229,18 +291,69 @@ struct EntryView: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
-            .foregroundStyle(viewModel.selectedCondition == condition ? .white : .primaryTextBlack)
+            .foregroundStyle(viewModel.conditionButtonForegroundColor(for: condition))
             .frame(maxWidth: .infinity)
             .padding(.vertical, 18)
             .background(
-                viewModel.selectedCondition == condition ? .kokowaTeal : Color.white.opacity(0.56),
+                viewModel.conditionButtonBackgroundColor(for: condition),
                 in: RoundedRectangle(cornerRadius: 18, style: .continuous)
             )
         }
         .buttonStyle(.plain)
     }
 
-    /// 感謝を書き出すカード。現時点では1行だけの仮UI。
+    /// ストレスレベルを4択で選ぶカード。
+    @ViewBuilder
+    private func stressLevelCardView() -> some View {
+        VStack(alignment: .leading, spacing: 20) {
+            HStack(spacing: 14) {
+                Image(systemName: "waveform.path.ecg")
+                    .font(.title3.weight(.bold))
+                    .foregroundStyle(.kokowaRose)
+                    .frame(width: 54, height: 54)
+                    .background(.kokowaRose.opacity(0.14), in: Circle())
+
+                Text("ストレス")
+                    .font(.title2.weight(.bold))
+                    .foregroundStyle(.primaryTextBlack)
+            }
+
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 2), spacing: 12) {
+                ForEach(StressLevel.allCases) { stressLevel in
+                    stressLevelButton(stressLevel)
+                }
+            }
+        }
+        .padding(22)
+        .kokowaCard(cornerRadius: 24)
+    }
+
+    /// ストレスレベルカード内の1つぶんの選択ボタン。
+    @ViewBuilder
+    private func stressLevelButton(_ stressLevel: StressLevel) -> some View {
+        Button {
+            viewModel.selectStressLevel(stressLevel)
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: stressLevel.iconName)
+                    .font(.headline.weight(.bold))
+                Text(stressLevel.title)
+                    .font(.headline.weight(.bold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+            .foregroundStyle(viewModel.stressLevelButtonForegroundColor(for: stressLevel))
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 18)
+            .background(
+                viewModel.stressLevelButtonBackgroundColor(for: stressLevel),
+                in: RoundedRectangle(cornerRadius: 18, style: .continuous)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// 感謝を書き出すカード。
     @ViewBuilder
     private func gratitudeCardView() -> some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -249,36 +362,85 @@ struct EntryView: View {
                     .font(.title3.weight(.bold))
                     .foregroundStyle(.kokowaTerracotta)
                     .frame(width: 54, height: 54)
-                    .background(Color(red: 0.82, green: 0.48, blue: 0.26).opacity(0.13), in: Circle())
+                    .background(.kokowaTerracotta.opacity(0.13), in: Circle())
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("感謝")
                         .font(.title2.weight(.bold))
                         .foregroundStyle(.primaryTextBlack)
-                    Text("今日ありがたかったことを10個")
+                    Text("今日ありがたかったこと \(viewModel.gratitudeCountText)")
                         .font(.subheadline.weight(.bold))
                         .foregroundStyle(.secondaryTextGray)
                 }
             }
 
-            HStack(spacing: 12) {
-                Text("1")
-                    .font(.headline.weight(.bold))
-                    .foregroundStyle(Color(red: 0.82, green: 0.48, blue: 0.26))
-                    .frame(width: 46, height: 46)
-                    .background(.kokowaTerracotta.opacity(0.12), in: Circle())
-
-                TextField("ありがとうと思えたこと", text: $viewModel.gratitudeText)
-                    .font(.headline)
-                    .foregroundStyle(.primaryTextBlack)
-                    .textInputAutocapitalization(.never)
+            if viewModel.shouldShowGratitudeDraftField {
+                gratitudeDraftFieldView()
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
-            .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+
+            ForEach(viewModel.gratitudeTexts.indices, id: \.self) { index in
+                gratitudeSavedFieldView(index: index)
+            }
         }
         .padding(22)
         .kokowaCard(cornerRadius: 24)
+    }
+
+    /// 感謝カードの新規入力欄を表示する。
+    @ViewBuilder
+    private func gratitudeDraftFieldView() -> some View {
+        HStack(spacing: 12) {
+            Text("1")
+                .font(.headline.weight(.bold))
+                .foregroundStyle(.kokowaTerracotta)
+                .frame(width: 46, height: 46)
+                .background(.kokowaTerracotta.opacity(0.12), in: Circle())
+
+            TextField("ありがとうと思えたこと", text: $viewModel.gratitudeDraftText)
+                .font(.headline)
+                .foregroundStyle(.primaryTextBlack)
+                .textInputAutocapitalization(.never)
+                .submitLabel(.done)
+                .onSubmit(viewModel.commitGratitudeDraftIfNeeded)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    /// 感謝カードの入力済み欄を表示する。
+    @ViewBuilder
+    private func gratitudeSavedFieldView(index: Int) -> some View {
+        HStack(spacing: 12) {
+            Text("\(index + gratitudeSavedFieldNumberOffset())")
+                .font(.headline.weight(.bold))
+                .foregroundStyle(.kokowaTerracotta)
+                .frame(width: 46, height: 46)
+                .background(.kokowaTerracotta.opacity(0.12), in: Circle())
+
+            TextField(
+                "ありがとうと思えたこと",
+                text: Binding(
+                    get: {
+                        viewModel.gratitudeTexts[index]
+                    },
+                    set: { newValue in
+                        viewModel.updateGratitudeText(at: index, text: newValue)
+                    }
+                )
+            )
+            .font(.headline)
+            .foregroundStyle(.primaryTextBlack)
+            .textInputAutocapitalization(.never)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    /// 入力済み感謝欄の表示番号に使う開始位置を返す。
+    private func gratitudeSavedFieldNumberOffset() -> Int {
+        viewModel.shouldShowGratitudeDraftField ? 2 : 1
     }
 
     /// 今日感じたことを自由に残すメモ欄。
@@ -305,7 +467,7 @@ struct EntryView: View {
                 .padding(14)
                 .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
                 .overlay(alignment: .topLeading) {
-                    if viewModel.memoText.isEmpty {
+                    if viewModel.shouldShowMemoPlaceholder {
                         Text("感じたことを短く残す")
                             .font(.headline)
                             .foregroundStyle(.secondaryTextGray.opacity(0.42))
@@ -319,7 +481,7 @@ struct EntryView: View {
         .kokowaCard(cornerRadius: 24)
     }
 
-    /// 保存ボタン。データ保存方法は後で決めるため、今は見た目だけ作っている。
+    /// 記録の保存または変更を実行するボタン。
     @ViewBuilder
     private func saveButtonView() -> some View {
         Button {
@@ -328,7 +490,7 @@ struct EntryView: View {
             HStack(spacing: 12) {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.title2.weight(.bold))
-                Text("保存")
+                Text(viewModel.saveButtonTitle)
                     .font(.title2.weight(.bold))
             }
             .foregroundStyle(.white)
@@ -340,7 +502,7 @@ struct EntryView: View {
         .buttonStyle(.plain)
     }
 
-    /// 画面下部に固定する、メイン画面へ戻るためのボタン。
+    /// 画面下部に固定する、ホーム画面へ戻るためのボタン。
     @ViewBuilder
     private func returnButtonView() -> some View {
         Button {
@@ -349,7 +511,7 @@ struct EntryView: View {
             HStack(spacing: 10) {
                 Image(systemName: "house.fill")
                     .font(.title3).bold()
-                Text("メインに戻る")
+                Text("ホームに戻る")
                     .font(.title3).bold()
             }
             .foregroundStyle(.gray)

@@ -11,10 +11,12 @@ struct AlertDataPickerWrapper: UIViewControllerRepresentable {
     @Binding var isPresented: Bool
     @Binding var selectedDate: Date?
 
+    /// アラート表示の土台になるUIViewControllerを生成する。
     func makeUIViewController(context: Context) -> UIViewController {
         UIViewController()
     }
 
+    /// 表示状態に応じて時刻選択アラートを更新する。
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
         guard isPresented, uiViewController.presentedViewController == nil else { return }
 

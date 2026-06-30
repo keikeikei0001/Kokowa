@@ -6,9 +6,11 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct CharacterNamingView: View {
     @EnvironmentObject var authManager: AuthManager
+    @Environment(\.modelContext) private var modelContext
     @StateObject var viewModel: CharacterNamingViewModel
     @FocusState private var isFocused: Bool
     
@@ -28,6 +30,7 @@ struct CharacterNamingView: View {
         .hideKeyboardOnTap()
         .onAppear {
             viewModel.setAuthManager(authManager: authManager)
+            viewModel.setModelContext(modelContext)
         }
     }
     
@@ -66,6 +69,7 @@ struct CharacterNamingView: View {
             }
     }
 
+    /// 入力欄とキャラクター画像をまとめたカードを表示する。
     @ViewBuilder
     private func characterCardView() -> some View {
         VStack(spacing: 18) {
@@ -83,7 +87,7 @@ struct CharacterNamingView: View {
             Image(viewModel.characterId)
                 .resizable()
                 .scaledToFit()
-                .frame(width: DeviceModel.width * 0.58, height: DeviceModel.height * 0.34)
+                .frame(width: viewModel.characterImageSize.width, height: viewModel.characterImageSize.height)
                 .shadow(color: .kokowaTeal.opacity(0.22), radius: 18, x: 0, y: 12)
         }
     }

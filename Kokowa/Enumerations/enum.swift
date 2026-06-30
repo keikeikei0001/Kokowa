@@ -29,3 +29,26 @@ enum EntryCondition: String, CaseIterable, Identifiable {
         }
     }
 }
+
+enum StressLevel: String, CaseIterable, Identifiable {
+    case veryHigh = "かなり高い"
+    case high = "高い"
+    case normal = "少し高い"
+    case low = "普通以下"
+
+    var id: String { rawValue }
+    var title: String { rawValue }
+
+    var iconName: String {
+        switch self {
+        case .veryHigh:
+            "flame.fill"
+        case .high:
+            "exclamationmark.triangle.fill"
+        case .normal:
+            "minus.circle.fill"
+        case .low:
+            "leaf.fill"
+        }
+    }
+}

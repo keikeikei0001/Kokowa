@@ -17,23 +17,9 @@ class LoginViewModel: ObservableObject {
         self.authManager = authManager
     }
     
-    /// テスト用サインイン処理
+    /// ログイン状態を保存する。
     @MainActor
     func handleSignInButtonTapTest() {
-        let us = UserDefaults.standard
-        if let userId = us.string(forKey: "testUserId") {
-            let newUser = us.bool(forKey: "newUser")
-            if newUser == false {
-                authManager?.SignIn(userId: userId)
-            } else {
-                authManager?.userId = userId
-                authManager?.isNewUser = true
-            }
-        } else {
-            let newUserId = "\(UUID())"
-            us.set(newUserId, forKey: "testUserId")
-            authManager?.userId = newUserId
-            authManager?.isNewUser = true
-        }
+        authManager?.SignIn()
     }
 }

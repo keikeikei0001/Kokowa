@@ -11,18 +11,15 @@ struct ContentView: View {
     @EnvironmentObject var authManager: AuthManager
 
     var body: some View {
-        if authManager.isSignedIn {
+        if authManager.needsInitialUserSetup {
+            CharacterSelectedView()
+        } else if authManager.isSignedIn {
             MainView()
         } else {
-            if authManager.isNewUser {
-                CharacterSelectedView()
-            } else {
-                LoginView()
-            }
+            LoginView()
         }
     }
 }
-
 
 
 
