@@ -12,6 +12,9 @@ protocol MentalEntryRepository {
     /// 指定日のメンタル記録を取得する。
     func fetchEntry(userId: String, date: Date) throws -> MentalEntry?
 
+    /// 指定期間のメンタル記録を取得する。
+    func fetchEntries(userId: String, from startDate: Date, to endDate: Date) throws -> [MentalEntry]
+
     /// メンタル記録を新規保存または更新する。
     func saveEntry(
         userId: String,
@@ -48,6 +51,20 @@ final class LocalMentalEntryRepository: MentalEntryRepository {
         )
         descriptor.fetchLimit = 1
         return try modelContext.fetch(descriptor).first
+    }
+
+    /// 指定期間のメンタル記録を取得する。
+    func fetchEntries(userId: String, from startDate: Date, to endDate: Date) throws -> [MentalEntry] {
+        let startOfDay = Calendar.current.startOfDay(for: startDate)
+        let endOfDay = dateHelper.getStartAndEndOfDay(date: endDate).1
+
+        let descriptor = FetchDescriptor<MentalEntry>(
+            predicate: #Predicate { entry in
+                entry.userId == userId && entry.entryDate >= startOfDay && entry.entryDate <= endOfDay
+            },
+            sortBy: [SortDescriptor(\.entryDate)]
+        )
+        return try modelContext.fetch(descriptor)
     }
 
     /// メンタル記録を新規保存または更新する。
