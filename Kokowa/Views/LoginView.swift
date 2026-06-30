@@ -19,7 +19,7 @@ struct LoginView: View {
             VStack(spacing: 24) {
                 Spacer()
                 explanatoryTextView()
-                SignInButtonTest()
+                SignInButton()
                 Spacer()
             }
             .padding(24)
@@ -47,9 +47,9 @@ struct LoginView: View {
         .kokowaCard()
     }
     
-    /// テスト用のサインインView
+    /// サインインボタンView
     @ViewBuilder
-    private func SignInButtonTest() -> some View {
+    private func SignInButton() -> some View {
         Button(action: viewModel.handleSignInButtonTapTest) {
             Text("はじめる")
                 .font(.headline.weight(.bold))

@@ -61,7 +61,7 @@ struct CharacterNamingView: View {
                     .stroke(isFocused ? KokowaStyle.teal.opacity(0.65) : Color.white.opacity(0.9), lineWidth: 1)
             )
             .focused($isFocused)
-            .onChange(of: viewModel.inputCharacterName) { newValue in
+            .onChange(of: viewModel.inputCharacterName) { _, newValue in
                 viewModel.checkLimitSixCharacters(newValue: newValue)
             }
     }
