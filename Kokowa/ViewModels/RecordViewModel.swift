@@ -4,15 +4,12 @@
 //
 //  Created by けいけい on 2026/06/30.
 //
-
 import SwiftUI
+import AuthenticationServices
+import Combine
 
-struct RecordViewModel: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-    }
-}
-
-#Preview {
-    RecordViewModel()
+class RecordViewModel: ObservableObject {
+    private var authManager: AuthManager?
+    
+   
 }

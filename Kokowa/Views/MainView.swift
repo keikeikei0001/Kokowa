@@ -72,7 +72,7 @@ struct MainView: View {
                         .font(.caption.weight(.bold))
                         .foregroundStyle(.secondaryTextGray)
 
-                    Text(viewModel.character.name)
+                    Text(viewModel.characterNameText)
                         .font(.system(size: 38, weight: .bold, design: .rounded))
                         .foregroundStyle(.primaryTextBlack)
                         .lineLimit(1)
@@ -86,7 +86,7 @@ struct MainView: View {
                         .font(.headline.weight(.bold))
                         .foregroundStyle(.secondaryTextGray)
 
-                    Text("\(viewModel.character.level)")
+                    Text(viewModel.characterLevelText)
                         .font(.system(size: 42, weight: .bold, design: .rounded))
                         .foregroundStyle(.kokowaTeal)
                 }
@@ -191,7 +191,7 @@ struct MainView: View {
                 .frame(width: 180 * viewModel.motion.shadowScale, height: 34 * viewModel.motion.shadowScale)
                 .offset(y: viewModel.characterShadowOffsetY(sceneHeight: sceneHeight))
 
-            Image(viewModel.character.imageName)
+            Image(viewModel.characterImageName)
                 .resizable()
                 .scaledToFit()
                 .frame(width: viewModel.characterImageSize)
@@ -208,6 +208,8 @@ struct MainView: View {
         HStack {
             Spacer()
             naviLinkButtonView("square.and.pencil", title: "記入", AnyView(EntryView()))
+            Spacer()
+            naviLinkButtonView("book.closed.fill", title: "記録", AnyView(RecordView()))
             Spacer()
             naviLinkButtonView("gear", title: "設定", AnyView(SettingView()))
             Spacer()

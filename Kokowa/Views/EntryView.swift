@@ -13,7 +13,6 @@ struct EntryView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var authManager: AuthManager
     @StateObject private var viewModel = EntryViewModel()
-    @State private var isKeyboardVisible = false
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -54,7 +53,7 @@ struct EntryView: View {
             }
 
             // このアプリでは通常のタブ欄を使わず、ここではホーム画面へ戻る導線だけを置く。
-            if isKeyboardVisible == false {
+            if viewModel.isKeyboardVisible == false {
                 returnButtonView()
             }
         }
@@ -64,10 +63,10 @@ struct EntryView: View {
             viewModel.configure(modelContext: modelContext, userId: authManager.userId)
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
-            isKeyboardVisible = true
+            viewModel.isKeyboardVisible = true
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
-            isKeyboardVisible = false
+            viewModel.isKeyboardVisible = false
         }
     }
 

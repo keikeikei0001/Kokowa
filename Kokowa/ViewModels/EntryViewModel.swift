@@ -19,6 +19,7 @@ final class EntryViewModel: ObservableObject {
     @Published var gratitudeTexts: [String] = []
     @Published var memoText = ""
     @Published var isTodayEntrySaved = false
+    @Published var isKeyboardVisible = false
     
     private let dateHelper = DateHelper()
     private var userId: String?

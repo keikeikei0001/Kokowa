@@ -9,22 +9,9 @@ import SwiftUI
 import Combine
 import SwiftData
 
-struct MainCharacterState {
-    var name = "ウルフねこ"
-    var imageName = "uruhuneko0001"
-    var level = 1
-    var experiencePoint = 10
-    var levelUpNeedExperience = 10
-}
-
-struct UserData {
-    var currentMentalPoint: Double?
-    var mainCharacterState = MainCharacterState()
-}
-
 class MainViewModel: ObservableObject {
-    @Published var character = MainCharacterState()
-    @Published var userData = UserData()
+    @Published var activeCharacter: OwnedCharacter?
+    @Published var userProfile: UserProfile?
     @Published var motion = MainCharacterMotion()
     @Published var alert: AlertContext?
 
@@ -32,22 +19,46 @@ class MainViewModel: ObservableObject {
     private var characterRepository: CharacterRepository?
     private var userProfileRepository: UserProfileRepository?
 
+    /// キャラクター名の表示用テキストを返す。
+    var characterNameText: String {
+        activeCharacter?.name ?? "相棒"
+    }
+
+    /// キャラクターレベルの表示用テキストを返す。
+    var characterLevelText: String {
+        "\(activeCharacter?.level ?? 1)"
+    }
+
     /// キャラクターの経験値表示用テキストを返す。
     var characterExpText: String {
-        "\(character.experiencePoint) / \(character.levelUpNeedExperience)"
+        guard let activeCharacter else {
+            return "0 / 10"
+        }
+
+        let requiredExperience = characterRepository?.requiredExperience(for: activeCharacter.level) ?? 10
+        return "\(activeCharacter.experiencePoint) / \(requiredExperience)"
     }
 
     /// ユーザーの現在メンタル値を表示用テキストで返す。
     var characterMentalText: String {
-        guard let currentMentalPoint = userData.currentMentalPoint else {
+        guard let todayMental = userProfile?.todayMental else {
             return "ー"
         }
-        return "\(currentMentalPoint)"
+        return "\(todayMental)"
+    }
+
+    /// キャラクター画像名を返す。
+    var characterImageName: String {
+        guard let activeCharacter else {
+            return "uruhuneko0001"
+        }
+
+        return CharacterMasterStore.character(id: activeCharacter.characterId)?.imageName ?? activeCharacter.characterId
     }
 
     /// キャラクター画像の表示幅を返す。
     var characterImageSize: CGFloat {
-        if character.imageName == "usaneko0001" {
+        if characterImageName == "usaneko0001" {
             return DeviceModel.width / 1.93
         }
         return DeviceModel.width / 1.8
@@ -96,30 +107,17 @@ class MainViewModel: ObservableObject {
             let characterRepository,
             let userProfileRepository
         else {
-            character = MainCharacterState()
+            activeCharacter = nil
+            userProfile = nil
             return
         }
 
         do {
-            if let activeCharacter = try characterRepository.fetchActiveCharacter(userId: userId) {
-                let master = CharacterMasterStore.character(id: activeCharacter.characterId)
-                character = MainCharacterState(
-                    name: activeCharacter.name,
-                    imageName: master?.imageName ?? activeCharacter.characterId,
-                    level: activeCharacter.level,
-                    experiencePoint: activeCharacter.experiencePoint,
-                    levelUpNeedExperience: characterRepository.requiredExperience(for: activeCharacter.level)
-                )
-            }
-
-            if let todayMental = try userProfileRepository.fetchUserProfile(userId: userId)?.todayMental {
-                userData.currentMentalPoint = todayMental
-            } else {
-                userData.currentMentalPoint = nil
-            }
+            activeCharacter = try characterRepository.fetchActiveCharacter(userId: userId)
+            userProfile = try userProfileRepository.fetchUserProfile(userId: userId)
         } catch {
-            character = MainCharacterState()
-            userData.currentMentalPoint = nil
+            activeCharacter = nil
+            userProfile = nil
         }
     }
 
