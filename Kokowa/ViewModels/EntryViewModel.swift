@@ -28,7 +28,7 @@ final class EntryViewModel: ObservableObject {
     private var userProfileRepository: UserProfileRepository?
 
     private let saveExperiencePoint = 5
-    private let maxGratitudeCount = 10
+    private let maxGratitudeCount = 3
 
     /// 今日の日付表示用テキストを返す。
     var todayText: String {
