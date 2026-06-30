@@ -13,11 +13,11 @@ struct RecordView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var authManager: AuthManager
     @StateObject private var viewModel = RecordViewModel()
-
+    
     var body: some View {
         ZStack(alignment: .bottom) {
             KokowaBackground()
-
+            
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 22) {
                     headerView()
@@ -28,7 +28,7 @@ struct RecordView: View {
                 .padding(.top, 72)
                 .padding(.bottom, 104)
             }
-
+            
             returnButtonView()
         }
         .navigationBarBackButtonHidden(true)
@@ -36,7 +36,7 @@ struct RecordView: View {
             viewModel.configure(modelContext: modelContext, userId: authManager.userId)
         }
     }
-
+    
     /// 日付・画面タイトル・補足文を表示するヘッダー。
     @ViewBuilder
     private func headerView() -> some View {
@@ -44,67 +44,62 @@ struct RecordView: View {
             Text(viewModel.todayText)
                 .font(.headline.weight(.bold))
                 .foregroundStyle(.secondaryTextGray)
-
+            
             Text("記録")
                 .font(.system(size: 46, weight: .bold, design: .rounded))
                 .foregroundStyle(.primaryTextBlack)
-
+            
             Text("残してきた日々を、静かに見返す")
                 .font(.title3.weight(.bold))
                 .foregroundStyle(.secondaryTextGray)
         }
     }
-
+    
     /// 直近1週間のメンタル・睡眠・体調・ストレスを表示するカード。
     @ViewBuilder
     private func weeklySummaryCardView() -> some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("ここ1週間のメンタル")
+                    Text("7日間の平均")
                         .font(.title3.weight(.bold))
                         .foregroundStyle(.secondaryTextGray)
-
-                    HStack(alignment: .lastTextBaseline, spacing: 8) {
-                        Text(viewModel.weeklyMentalText)
-                            .font(.system(size: 56, weight: .bold, design: .rounded))
-                            .foregroundStyle(.primaryTextBlack)
-
-                        Text("点")
-                            .font(.title.weight(.bold))
+                    HStack(spacing: 30) {
+                        Text("メンタル")
+                            .font(.body.weight(.bold))
                             .foregroundStyle(.secondaryTextGray)
+                        HStack(alignment: .lastTextBaseline, spacing: 8) {
+                            Text(viewModel.weeklyMentalText)
+                                .font(.system(size: 56, weight: .bold, design: .rounded))
+                                .foregroundStyle(.primaryTextBlack)
+                            
+                            Text("点")
+                                .font(.title.weight(.bold))
+                                .foregroundStyle(.secondaryTextGray)
+                        }
                     }
                 }
-
-                Spacer()
-
-                Image(systemName: "heart.text.square.fill")
-                    .font(.system(size: 30, weight: .bold))
-                    .foregroundStyle(.kokowaRose)
-                    .frame(width: 68, height: 68)
-                    .background(Color.white.opacity(0.78), in: Circle())
-                    .shadow(color: .kokowaRose.opacity(0.12), radius: 18, x: 0, y: 10)
             }
-
+            
             HStack(spacing: 10) {
                 summaryMiniCard(
                     icon: "moon.fill",
                     value: viewModel.weeklySleepText,
-                    label: "1週間の睡眠",
+                    label: "睡眠時間",
                     color: .kokowaPeriwinkle
                 )
-
+                
                 summaryMiniCard(
                     icon: "sun.max.fill",
                     value: viewModel.weeklyConditionText,
-                    label: "1週間の体調",
+                    label: "体調",
                     color: .kokowaTeal
                 )
-
+                
                 summaryMiniCard(
                     icon: "waveform.path.ecg",
                     value: viewModel.weeklyStressText,
-                    label: "1週間のストレス",
+                    label: "ストレス",
                     color: .kokowaRose
                 )
             }
@@ -112,7 +107,7 @@ struct RecordView: View {
         .padding(20)
         .kokowaCard(cornerRadius: 24)
     }
-
+    
     /// サマリーカード内の小さな情報カードを表示する。
     @ViewBuilder
     private func summaryMiniCard(icon: String, value: String, label: String, color: Color) -> some View {
@@ -122,13 +117,13 @@ struct RecordView: View {
                 .foregroundStyle(color)
                 .frame(width: 32, height: 32)
                 .background(color.opacity(0.14), in: Circle())
-
+            
             Text(value)
                 .font(.headline.weight(.bold))
                 .foregroundStyle(.primaryTextBlack)
                 .lineLimit(1)
                 .minimumScaleFactor(0.64)
-
+            
             Text(label)
                 .font(.caption.weight(.bold))
                 .foregroundStyle(.secondaryTextGray)
@@ -139,7 +134,7 @@ struct RecordView: View {
         .padding(12)
         .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
-
+    
     /// 月間カレンダーと選択日の詳細を表示するカード。
     @ViewBuilder
     private func calendarCardView() -> some View {
@@ -150,14 +145,14 @@ struct RecordView: View {
                     .foregroundStyle(.primaryTextBlack)
                     .lineLimit(1)
                     .fixedSize(horizontal: true, vertical: false)
-
+                
                 HStack {
                     Spacer()
                     monthSelectorView()
                     Spacer()
                 }
             }
-
+            
             weekdayHeaderView()
             calendarGridView()
             selectedDateDetailCardView()
@@ -165,7 +160,7 @@ struct RecordView: View {
         .padding(18)
         .kokowaCard(cornerRadius: 24)
     }
-
+    
     /// 表示月を切り替える操作部を表示する。
     @ViewBuilder
     private func monthSelectorView() -> some View {
@@ -174,12 +169,12 @@ struct RecordView: View {
                 Image(systemName: "chevron.left")
                     .font(.headline.weight(.bold))
             }
-
+            
             Text(viewModel.displayedMonthText)
                 .font(.headline.weight(.bold))
                 .foregroundStyle(.primaryTextBlack)
                 .frame(minWidth: 112)
-
+            
             Button(action: viewModel.showNextMonth) {
                 Image(systemName: "chevron.right")
                     .font(.headline.weight(.bold))
@@ -190,7 +185,7 @@ struct RecordView: View {
         .padding(.vertical, 10)
         .background(Color.white.opacity(0.58), in: Capsule())
     }
-
+    
     /// 曜日の見出しを表示する。
     @ViewBuilder
     private func weekdayHeaderView() -> some View {
@@ -203,7 +198,7 @@ struct RecordView: View {
             }
         }
     }
-
+    
     /// 月間カレンダーのグリッドを表示する。
     @ViewBuilder
     private func calendarGridView() -> some View {
@@ -213,7 +208,7 @@ struct RecordView: View {
             }
         }
     }
-
+    
     /// カレンダー内の1日分のセルを表示する。
     @ViewBuilder
     private func calendarDayCell(_ day: RecordCalendarDay) -> some View {
@@ -225,7 +220,7 @@ struct RecordView: View {
                     Text(viewModel.dayNumberText(date))
                         .font(.caption.weight(.bold))
                         .foregroundStyle(viewModel.isSelectedDate(date) ? .white.opacity(0.78) : .secondaryTextGray)
-
+                    
                     Text(viewModel.mentalText(for: day.entry))
                         .font(.headline.weight(.bold))
                         .foregroundStyle(viewModel.isSelectedDate(date) ? .white : .primaryTextBlack)
@@ -236,8 +231,8 @@ struct RecordView: View {
                 .frame(height: 54)
                 .background(
                     viewModel.isSelectedDate(date)
-                        ? Color.kokowaTeal
-                        : calendarDayBackgroundColor(hasEntry: day.entry != nil),
+                    ? Color.kokowaTeal
+                    : calendarDayBackgroundColor(hasEntry: day.entry != nil),
                     in: RoundedRectangle(cornerRadius: 15, style: .continuous)
                 )
             }
@@ -247,7 +242,7 @@ struct RecordView: View {
                 .frame(height: 54)
         }
     }
-
+    
     /// 選択日の詳細カードを表示する。
     @ViewBuilder
     private func selectedDateDetailCardView() -> some View {
@@ -255,7 +250,7 @@ struct RecordView: View {
             Text(viewModel.selectedDateText)
                 .font(.headline.weight(.bold))
                 .foregroundStyle(.secondaryTextGray)
-
+            
             if viewModel.hasSelectedEntry {
                 LazyVGrid(columns: viewModel.detailColumns, spacing: 10) {
                     detailMetricView(icon: "heart.fill", value: viewModel.selectedMentalText, label: "メンタル", color: .kokowaRose)
@@ -275,7 +270,7 @@ struct RecordView: View {
         .padding(14)
         .background(Color.white.opacity(0.54), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
-
+    
     /// 選択日詳細の1項目を表示する。
     @ViewBuilder
     private func detailMetricView(icon: String, value: String, label: String, color: Color) -> some View {
@@ -285,13 +280,13 @@ struct RecordView: View {
                 .foregroundStyle(color)
                 .frame(width: 34, height: 34)
                 .background(color.opacity(0.14), in: Circle())
-
+            
             Text(value)
                 .font(.headline.weight(.bold))
                 .foregroundStyle(.primaryTextBlack)
                 .lineLimit(1)
                 .minimumScaleFactor(0.72)
-
+            
             Text(label)
                 .font(.caption.weight(.bold))
                 .foregroundStyle(.secondaryTextGray)
@@ -300,12 +295,12 @@ struct RecordView: View {
         .padding(12)
         .background(Color.white.opacity(0.62), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
-
+    
     /// 日付セルの背景色を返す。
     private func calendarDayBackgroundColor(hasEntry: Bool) -> Color {
         hasEntry ? .kokowaMint.opacity(0.72) : Color.white.opacity(0.46)
     }
-
+    
     /// ホーム画面へ戻るためのボタンを表示する。
     @ViewBuilder
     private func returnButtonView() -> some View {
