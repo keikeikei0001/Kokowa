@@ -13,6 +13,7 @@ struct IntrospectionView: View {
     @StateObject private var viewModel = IntrospectionViewModel()
     @State private var isInputPeriodPickerPresented = false
     @State private var isEmotionSelectionPresented = false
+    @State private var isFeelingSelectionPresented = false
     
     let memoryEntry: MemoryEntry?
     
@@ -29,6 +30,7 @@ struct IntrospectionView: View {
                 VStack(alignment: .leading, spacing: 18) {
                     headerView()
                     eventCardView()
+                    emotionReleaseView()
                     decompositionCardView()
                     InnerVoiceView()
                     insightView()
@@ -59,6 +61,41 @@ struct IntrospectionView: View {
         .sheet(isPresented: $isEmotionSelectionPresented) {
             emotionSelectionSheetView()
         }
+        .sheet(isPresented: $isFeelingSelectionPresented) {
+            feelingSelectionSheetView()
+        }
+    }
+    
+    /// 感情を吐き出すための入力カードを表示する。
+    @ViewBuilder
+    private func emotionReleaseView() -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            cardTitleView(
+                icon: "flame.fill",
+                title: "感情を吐き出す",
+                color: .kokowaRose
+            )
+            
+            TextEditor(text: $viewModel.emotionReleaseText)
+                .font(.headline)
+                .foregroundStyle(.primaryTextBlack)
+                .scrollContentBackground(.hidden)
+                .frame(minHeight: 150)
+                .padding(14)
+                .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .overlay(alignment: .topLeading) {
+                    if viewModel.shouldShowEmotionReleasePlaceholder {
+                        Text("感情を言葉にして、吐き出しましょう！汚い言葉を使っても構いません。紙に書いたり、誰にも聞かれないところで叫ぶのもおすすめです")
+                            .font(.headline)
+                            .foregroundStyle(.secondaryTextGray.opacity(0.42))
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 22)
+                            .allowsHitTesting(false)
+                    }
+                }
+        }
+        .padding(18)
+        .kokowaCard(cornerRadius: 22)
     }
     
     /// 日付・画面タイトル・補足文を表示するヘッダー。
@@ -167,6 +204,16 @@ struct IntrospectionView: View {
             )
             
             introspectionTextAreaView(
+                icon: "shield.lefthalf.filled",
+                title: "どのような恐れがあったのか？",
+                placeholder: "恐れがある場合は、自分が何を恐れていたのかを書く",
+                color: .kokowaPeriwinkle,
+                text: $viewModel.fearText,
+                shouldShowPlaceholder: viewModel.shouldShowFearPlaceholder,
+                textMinHeight: 92
+            )
+            
+            introspectionTextAreaView(
                 icon: "figure.walk.motion",
                 title: "どうしたかったのか？",
                 placeholder: "本当は自分がどう動きたかったのかを書く",
@@ -249,6 +296,38 @@ struct IntrospectionView: View {
                 .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
             .buttonStyle(.plain)
+            
+            Button {
+                isFeelingSelectionPresented = true
+            } label: {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(spacing: 10) {
+                        if viewModel.selectedFeelings.isEmpty == false {
+                            FlowLayout(spacing: 6) {
+                                ForEach(viewModel.selectedFeelings, id: \.self) { feeling in
+                                    feelingChipView(feeling)
+                                }
+                            }
+                        } else {
+                            Text("気持ちに名前をつける")
+                                .font(.headline.weight(.bold))
+                                .foregroundStyle(.secondaryTextGray.opacity(0.42))
+                                .lineLimit(2)
+                                .multilineTextAlignment(.leading)
+                        }
+                        Spacer(minLength: 5)
+                        
+                        Image(systemName: "chevron.down")
+                            .font(.headline.weight(.bold))
+                            .foregroundStyle(.secondaryTextGray)
+                    }
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            }
+            .buttonStyle(.plain)
         }
         .padding(14)
         .background(Color.white.opacity(0.48), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
@@ -263,6 +342,17 @@ struct IntrospectionView: View {
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
             .background(.kokowaRose.opacity(0.12), in: Capsule())
+    }
+    
+    /// 選択済みの気持ちタグを表示する。
+    @ViewBuilder
+    private func feelingChipView(_ feeling: String) -> some View {
+        Text(feeling)
+            .font(.caption.weight(.bold))
+            .foregroundStyle(.kokowaTerracotta)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(.kokowaTerracotta.opacity(0.12), in: Capsule())
     }
     
     /// 内観の分解項目を入力する複数行欄を表示する。
@@ -363,11 +453,11 @@ struct IntrospectionView: View {
         VStack(alignment: .leading, spacing: 10) {
             compactSectionTitleView(icon: "person.fill", title: "相手", color: .kokowaPeriwinkle)
             
-            personDraftFieldView()
-            
             if viewModel.people.isEmpty == false {
                 peopleFieldListView()
             }
+            
+            personDraftFieldView()
             
             addPersonButtonView()
         }
@@ -378,7 +468,7 @@ struct IntrospectionView: View {
     /// 相手の新規入力欄を表示する。
     @ViewBuilder
     private func personDraftFieldView() -> some View {
-        personFieldShell(numberText: "1") {
+        personFieldShell(numberText: viewModel.personDraftNumberText) {
             TextField("相手の名前や関係を書く", text: $viewModel.personDraftText)
                 .font(.headline)
                 .foregroundStyle(.primaryTextBlack)
@@ -414,7 +504,7 @@ struct IntrospectionView: View {
     private func peopleFieldListView() -> some View {
         VStack(spacing: 8) {
             ForEach(Array(viewModel.people.enumerated()), id: \.offset) { index, person in
-                personFieldShell(numberText: "\(index + 2)") {
+                personFieldShell(numberText: "\(index + 1)") {
                     HStack(spacing: 10) {
                         TextField(
                             "相手の名前や関係を書く",
@@ -564,6 +654,85 @@ struct IntrospectionView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background(isSelected ? Color.kokowaRose : Color.white.opacity(0.74), in: Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+    
+    /// 気持ちの選択シートを表示する。
+    @ViewBuilder
+    private func feelingSelectionSheetView() -> some View {
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                LazyVStack(alignment: .leading, spacing: 16) {
+                    ForEach(viewModel.feelingReactionCategories) { category in
+                        feelingCategoryView(category)
+                    }
+                }
+                .padding(.horizontal, 18)
+                .padding(.vertical, 16)
+            }
+            .background(Color(.kokowaCloud).opacity(0.35))
+            .navigationTitle("気持ち")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("クリア") {
+                        viewModel.clearFeelings()
+                    }
+                    .foregroundStyle(.kokowaTerracotta)
+                }
+                
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("完了") {
+                        isFeelingSelectionPresented = false
+                    }
+                    .font(.headline.weight(.bold))
+                    .foregroundStyle(.kokowaTeal)
+                }
+            }
+        }
+        .presentationDetents([.large])
+    }
+    
+    /// 気持ちカテゴリ内の選択肢を表示する。
+    @ViewBuilder
+    private func feelingCategoryView(_ category: FeelingReactionCategory) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(category.title)
+                .font(.headline.weight(.bold))
+                .foregroundStyle(.primaryTextBlack)
+            
+            FlowLayout(spacing: 8) {
+                ForEach(category.feelings, id: \.self) { feeling in
+                    feelingOptionButtonView(feeling)
+                }
+            }
+        }
+        .padding(14)
+        .background(Color.white.opacity(0.68), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+    
+    /// 気持ちを選択または解除するボタンを表示する。
+    @ViewBuilder
+    private func feelingOptionButtonView(_ feeling: String) -> some View {
+        let isSelected = viewModel.isFeelingSelected(feeling)
+        
+        Button {
+            viewModel.toggleFeeling(feeling)
+        } label: {
+            HStack(spacing: 6) {
+                Text(feeling)
+                    .font(.subheadline.weight(.bold))
+                
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.caption.weight(.bold))
+                }
+            }
+            .foregroundStyle(isSelected ? .white : .primaryTextBlack)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(isSelected ? Color.kokowaTerracotta : Color.white.opacity(0.74), in: Capsule())
         }
         .buttonStyle(.plain)
     }

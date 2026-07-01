@@ -16,16 +16,26 @@ struct NegativeEmotionCategory: Identifiable {
     var id: String { title }
 }
 
+struct FeelingReactionCategory: Identifiable {
+    let title: String
+    let feelings: [String]
+    
+    var id: String { title }
+}
+
 final class IntrospectionViewModel: ObservableObject {
     @Published var titleText = ""
     @Published var selectedPeriod: MemoryPeriod = .elementary
     @Published var personDraftText = ""
     @Published var people: [String] = []
+    @Published var emotionReleaseText = ""
     @Published var factText = ""
     @Published var emotionText = ""
+    @Published var feelingText = ""
     @Published var bodyReactionText = ""
     @Published var thoughtText = ""
     @Published var desiredResponseText = ""
+    @Published var fearText = ""
     @Published var desiredActionText = ""
     @Published var insightText = ""
     @Published var isKeyboardVisible = false
@@ -50,7 +60,17 @@ final class IntrospectionViewModel: ObservableObject {
         trimmedPersonDraftText.isEmpty
     }
     
-    /// 出来事欄のプレースホルダーを表示するか判定する。
+    /// 新しく入力する相手欄の番号を返す。
+    var personDraftNumberText: String {
+        "\(people.count + 1)"
+    }
+    
+    /// 感情吐き出し欄のプレースホルダーを表示するか判定する。
+    var shouldShowEmotionReleasePlaceholder: Bool {
+        emotionReleaseText.isEmpty
+    }
+    
+    /// 事実欄のプレースホルダーを表示するか判定する。
     var shouldShowFactPlaceholder: Bool {
         factText.isEmpty
     }
@@ -58,6 +78,14 @@ final class IntrospectionViewModel: ObservableObject {
     /// 選択済みの感情を配列で返す。
     var selectedEmotions: [String] {
         emotionText
+            .components(separatedBy: "、")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { $0.isEmpty == false }
+    }
+    
+    /// 選択済みの気持ちを配列で返す。
+    var selectedFeelings: [String] {
+        feelingText
             .components(separatedBy: "、")
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { $0.isEmpty == false }
@@ -109,6 +137,76 @@ final class IntrospectionViewModel: ObservableObject {
         ]
     }
     
+    /// 気持ちの選択肢をカテゴリごとに返す。
+    var feelingReactionCategories: [FeelingReactionCategory] {
+        [
+            FeelingReactionCategory(
+                title: "傷つき・圧迫",
+                feelings: [
+                    "あざけられた",
+                    "あやつられた",
+                    "威圧された",
+                    "息が詰まった",
+                    "いらだった",
+                    "裏切られた",
+                    "追い出された",
+                    "追いつめられた",
+                    "脅かされた",
+                    "おとしめられた",
+                    "格下げされた",
+                    "価値を下げられた"
+                ]
+            ),
+            FeelingReactionCategory(
+                title: "拒絶・攻撃",
+                feelings: [
+                    "傷つけられた",
+                    "気分を害された",
+                    "拒絶された",
+                    "嫌われた",
+                    "軽蔑された",
+                    "攻撃された",
+                    "告発された",
+                    "裁かれた",
+                    "しつこく悩まされた",
+                    "叱責された"
+                ]
+            ),
+            FeelingReactionCategory(
+                title: "支配・侵害",
+                feelings: [
+                    "支配された",
+                    "侵入された",
+                    "捨てられた",
+                    "責められた",
+                    "だまされた",
+                    "付け込まれた",
+                    "つぶされた",
+                    "なおざりにされた",
+                    "盗まれた",
+                    "離れた"
+                ]
+            ),
+            FeelingReactionCategory(
+                title: "否定・孤立",
+                feelings: [
+                    "はねつけられた",
+                    "否定された",
+                    "侮辱された",
+                    "暴行された",
+                    "見捨てられた",
+                    "むごく扱われた",
+                    "無視された",
+                    "汚された",
+                    "理解されない",
+                    "利用された",
+                    "罠にはめられた",
+                    "笑いものにされた"
+                ]
+            )
+        ]
+    }
+    
     /// 身体反応欄のプレースホルダーを表示するか判定する。
     var shouldShowBodyReactionPlaceholder: Bool {
         bodyReactionText.isEmpty
@@ -122,6 +220,11 @@ final class IntrospectionViewModel: ObservableObject {
     /// どうして欲しかったのか欄のプレースホルダーを表示するか判定する。
     var shouldShowDesiredResponsePlaceholder: Bool {
         desiredResponseText.isEmpty
+    }
+    
+    /// 何を恐れていたのか欄のプレースホルダーを表示するか判定する。
+    var shouldShowFearPlaceholder: Bool {
+        fearText.isEmpty
     }
     
     /// どうしたかったのか欄のプレースホルダーを表示するか判定する。
@@ -145,8 +248,8 @@ final class IntrospectionViewModel: ObservableObject {
         
         titleText = memoryEntry.title
         selectedPeriod = memoryEntry.period
-        personDraftText = memoryEntry.people.first ?? ""
-        people = Array(memoryEntry.people.dropFirst())
+        personDraftText = ""
+        people = memoryEntry.people
         hasConfiguredMemoryEntry = true
     }
     
@@ -190,6 +293,27 @@ final class IntrospectionViewModel: ObservableObject {
     /// 選択中の感情をすべて解除する。
     func clearEmotions() {
         emotionText = ""
+    }
+    
+    /// 指定した気持ちを選択または解除する。
+    func toggleFeeling(_ feeling: String) {
+        var feelings = selectedFeelings
+        if let index = feelings.firstIndex(of: feeling) {
+            feelings.remove(at: index)
+        } else {
+            feelings.append(feeling)
+        }
+        feelingText = feelings.joined(separator: "、")
+    }
+    
+    /// 指定した気持ちが選択済みか判定する。
+    func isFeelingSelected(_ feeling: String) -> Bool {
+        selectedFeelings.contains(feeling)
+    }
+    
+    /// 選択中の気持ちをすべて解除する。
+    func clearFeelings() {
+        feelingText = ""
     }
     
     /// 遷移元に合わせて戻るボタンの表示を切り替える。
