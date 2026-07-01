@@ -177,15 +177,15 @@ struct MemoryView: View {
         Button {
             viewModel.addPerson()
         } label: {
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 Image(systemName: "plus.circle.fill")
-                    .font(.headline.weight(.bold))
+                    .font(.subheadline.weight(.bold))
                 Text("相手を追加")
-                    .font(.headline.weight(.bold))
+                    .font(.subheadline.weight(.bold))
             }
             .foregroundStyle(.kokowaPeriwinkle)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 7)
             .background(.kokowaPeriwinkle.opacity(0.12), in: Capsule())
         }
         .buttonStyle(.plain)

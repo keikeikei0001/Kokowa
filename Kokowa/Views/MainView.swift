@@ -190,18 +190,12 @@ struct MainView: View {
 
     /// 下部ボタンView
     private func bottomButtonView() -> some View {
-        HStack {
-            Spacer()
+        HStack(spacing: 1) {
             naviLinkButtonView("square.and.pencil", title: "記入", AnyView(EntryView()))
-            Spacer()
             naviLinkButtonView("book.closed.fill", title: "記録", AnyView(RecordView()))
-            Spacer()
             naviLinkButtonView("heart.text.square.fill", title: "記憶", AnyView(MemoryView()))
-            Spacer()
             naviLinkButtonView("sparkles", title: "内観", AnyView(IntrospectionView()))
-            Spacer()
             naviLinkButtonView("gear", title: "設定", AnyView(SettingView()))
-            Spacer()
         }
         .frame(maxWidth: .infinity)
         .padding(.top, 10)

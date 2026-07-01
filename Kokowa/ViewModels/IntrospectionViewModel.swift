@@ -15,6 +15,8 @@ final class IntrospectionViewModel: ObservableObject {
     @Published var personDraftText = ""
     @Published var people: [String] = []
     @Published var isKeyboardVisible = false
+    @Published var returnButtonTitle = "ホームに戻る"
+    @Published var returnButtonIconName = "house.fill"
 
     private let dateHelper = DateHelper()
     private var hasConfiguredMemoryEntry = false
@@ -40,6 +42,7 @@ final class IntrospectionViewModel: ObservableObject {
 
     /// 記憶記録の内容を内観画面の入力欄へ反映する。
     func configure(memoryEntry: MemoryEntry?) {
+        updateReturnButton(memoryEntry: memoryEntry)
         guard hasConfiguredMemoryEntry == false, let memoryEntry else { return }
 
         titleText = memoryEntry.title
@@ -68,5 +71,16 @@ final class IntrospectionViewModel: ObservableObject {
     func updatePerson(at index: Int, text: String) {
         guard people.indices.contains(index) else { return }
         people[index] = text
+    }
+
+    /// 遷移元に合わせて戻るボタンの表示を切り替える。
+    private func updateReturnButton(memoryEntry: MemoryEntry?) {
+        if memoryEntry == nil {
+            returnButtonTitle = "ホームに戻る"
+            returnButtonIconName = "house.fill"
+        } else {
+            returnButtonTitle = "記憶画面に戻る"
+            returnButtonIconName = "heart.text.square.fill"
+        }
     }
 }
