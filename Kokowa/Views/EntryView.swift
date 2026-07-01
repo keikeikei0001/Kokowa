@@ -355,17 +355,17 @@ struct EntryView: View {
     /// 感謝を書き出すカード。
     @ViewBuilder
     private func gratitudeCardView() -> some View {
-        VStack(alignment: .leading, spacing: 18) {
-            HStack(alignment: .top, spacing: 14) {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .center, spacing: 12) {
                 Image(systemName: "hands.sparkles.fill")
-                    .font(.title3.weight(.bold))
+                    .font(.headline.weight(.bold))
                     .foregroundStyle(.kokowaTerracotta)
-                    .frame(width: 54, height: 54)
+                    .frame(width: 44, height: 44)
                     .background(.kokowaTerracotta.opacity(0.13), in: Circle())
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("感謝")
-                        .font(.title2.weight(.bold))
+                        .font(.title3.weight(.bold))
                         .foregroundStyle(.primaryTextBlack)
                     Text("今日ありがたかったこと \(viewModel.gratitudeCountText)")
                         .font(.subheadline.weight(.bold))
@@ -377,37 +377,49 @@ struct EntryView: View {
                 gratitudeFieldView(index: index)
             }
         }
-        .padding(22)
-        .kokowaCard(cornerRadius: 24)
+        .padding(18)
+        .kokowaCard(cornerRadius: 22)
     }
 
     /// 感謝カードの入力欄を表示する。
     @ViewBuilder
     private func gratitudeFieldView(index: Int) -> some View {
-        HStack(spacing: 12) {
+        let shouldTopAlign = viewModel.shouldTopAlignGratitudeText(at: index)
+
+        HStack(spacing: 10) {
             Text("\(index + 1)")
-                .font(.headline.weight(.bold))
+                .font(.caption.weight(.bold))
                 .foregroundStyle(.kokowaTerracotta)
-                .frame(width: 46, height: 46)
+                .frame(width: viewModel.gratitudeNumberSize, height: viewModel.gratitudeNumberSize)
                 .background(.kokowaTerracotta.opacity(0.12), in: Circle())
 
-            TextField(
-                "ありがとうと思えたこと",
-                text: Binding(
-                    get: { viewModel.gratitudeTexts[index] },
-                    set: { viewModel.updateGratitudeText(at: index, text: $0) }
-                ),
-                axis: .vertical
-            )
-            .font(.headline)
-            .foregroundStyle(.primaryTextBlack)
-            .lineLimit(2, reservesSpace: true)
-            .frame(minHeight: viewModel.gratitudeFieldHeight)
-            .textInputAutocapitalization(.never)
+            VStack(spacing: 0) {
+                if shouldTopAlign == false {
+                    Spacer(minLength: 0)
+                }
+
+                TextField(
+                    "ありがとうと思えたこと",
+                    text: Binding(
+                        get: { viewModel.gratitudeTexts[index] },
+                        set: { viewModel.updateGratitudeText(at: index, text: $0) }
+                    ),
+                    axis: .vertical
+                )
+                .font(.headline)
+                .foregroundStyle(.primaryTextBlack)
+                .lineLimit(2)
+                .textInputAutocapitalization(.never)
+
+                if shouldTopAlign == false {
+                    Spacer(minLength: 0)
+                }
+            }
+            .frame(height: viewModel.gratitudeFieldHeight, alignment: shouldTopAlign ? .top : .center)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
-        .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     /// 今日感じたことを自由に残すメモ欄。

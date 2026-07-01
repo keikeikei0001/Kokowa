@@ -76,7 +76,12 @@ final class EntryViewModel: ObservableObject {
 
     /// 感謝欄の高さを返す。
     var gratitudeFieldHeight: CGFloat {
-        64
+        44
+    }
+
+    /// 感謝欄の番号サイズを返す。
+    var gratitudeNumberSize: CGFloat {
+        34
     }
 
     /// 感謝欄として表示する番号の範囲を返す。
@@ -164,6 +169,13 @@ final class EntryViewModel: ObservableObject {
     func updateGratitudeText(at index: Int, text: String) {
         guard gratitudeTexts.indices.contains(index) else { return }
         gratitudeTexts[index] = text
+    }
+
+    /// 感謝欄の文字を上寄せにするか判定する。
+    func shouldTopAlignGratitudeText(at index: Int) -> Bool {
+        guard gratitudeTexts.indices.contains(index) else { return false }
+        let text = gratitudeTexts[index]
+        return text.contains("\n") || text.count > 18
     }
 
     /// 入力内容の保存処理を実行する。

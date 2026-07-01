@@ -52,3 +52,25 @@ enum StressLevel: String, CaseIterable, Identifiable {
         }
     }
 }
+
+enum MemoryPeriod: String, CaseIterable, Identifiable {
+    case preschool = "園児以下"
+    case elementary = "小学生"
+    case juniorHigh = "中学生"
+    case highSchool = "高校生"
+    case university = "大学生"
+    case adult = "社会人"
+    case other = "その他"
+
+    var id: String { rawValue }
+    var title: String { rawValue }
+}
+
+enum MemoryIntrospectionStatus: String, CaseIterable, Identifiable {
+    case notStarted = "未内観"
+    case inProgress = "内観中"
+    case completed = "内観済"
+
+    var id: String { rawValue }
+    var title: String { rawValue }
+}

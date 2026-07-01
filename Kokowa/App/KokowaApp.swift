@@ -21,7 +21,8 @@ struct KokowaApp: App {
         .modelContainer(for: [
             UserProfile.self,
             OwnedCharacter.self,
-            MentalEntry.self
+            MentalEntry.self,
+            MemoryEntry.self
         ])
     }
 }

@@ -26,6 +26,7 @@ final class LocalAccountRepository: AccountRepository {
         try deleteUserProfiles(userId: userId)
         try deleteOwnedCharacters(userId: userId)
         try deleteMentalEntries(userId: userId)
+        try deleteMemoryEntries(userId: userId)
         try modelContext.save()
     }
 
@@ -56,6 +57,18 @@ final class LocalAccountRepository: AccountRepository {
     /// 指定したユーザーIDのメンタル記録を削除する。
     private func deleteMentalEntries(userId: String) throws {
         let descriptor = FetchDescriptor<MentalEntry>(
+            predicate: #Predicate { entry in
+                entry.userId == userId
+            }
+        )
+        try modelContext.fetch(descriptor).forEach { entry in
+            modelContext.delete(entry)
+        }
+    }
+
+    /// 指定したユーザーIDの記憶記録を削除する。
+    private func deleteMemoryEntries(userId: String) throws {
+        let descriptor = FetchDescriptor<MemoryEntry>(
             predicate: #Predicate { entry in
                 entry.userId == userId
             }
