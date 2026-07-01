@@ -17,7 +17,7 @@ final class MemoryViewModel: ObservableObject {
     @Published var people: [String] = []
     @Published var entries: [MemoryEntry] = []
     @Published var selectedPeriodFilter: MemoryPeriod?
-    @Published var selectedPersonFilter: String?
+    @Published var personSearchText = ""
     @Published var selectedIntrospectionStatusFilter: MemoryIntrospectionStatus?
     @Published var isKeyboardVisible = false
 
@@ -59,15 +59,12 @@ final class MemoryViewModel: ObservableObject {
     var filteredEntries: [MemoryEntry] {
         entries.filter { entry in
             let matchesPeriod = selectedPeriodFilter.map { entry.period == $0 } ?? true
-            let matchesPerson = selectedPersonFilter.map { entry.people.contains($0) } ?? true
+            let matchesPerson = trimmedPersonSearchText.isEmpty || entry.people.contains { person in
+                person.localizedCaseInsensitiveContains(trimmedPersonSearchText)
+            }
             let matchesStatus = selectedIntrospectionStatusFilter.map { entry.introspectionStatus == $0 } ?? true
             return matchesPeriod && matchesPerson && matchesStatus
         }
-    }
-
-    /// 登録済みの相手名を重複なしで返す。
-    var personFilterOptions: [String] {
-        Array(Set(entries.flatMap(\.people))).sorted()
     }
 
     /// 内観ステータスの選択肢を返す。
@@ -78,11 +75,6 @@ final class MemoryViewModel: ObservableObject {
     /// 時期フィルターの表示テキストを返す。
     var selectedPeriodFilterText: String {
         selectedPeriodFilter?.title ?? "すべて"
-    }
-
-    /// 相手フィルターの表示テキストを返す。
-    var selectedPersonFilterText: String {
-        selectedPersonFilter ?? "すべて"
     }
 
     /// 内観フィルターの表示テキストを返す。
@@ -96,6 +88,10 @@ final class MemoryViewModel: ObservableObject {
 
     private var trimmedPersonDraftText: String {
         personDraftText.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var trimmedPersonSearchText: String {
+        personSearchText.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     /// 保存データの読み込みに必要な情報をセットする。
@@ -151,46 +147,14 @@ final class MemoryViewModel: ObservableObject {
         }
     }
 
-    /// 指定した記憶記録を削除する。
-    func deleteEntry(_ entry: MemoryEntry) {
-        guard let memoryEntryRepository else { return }
-
-        do {
-            try memoryEntryRepository.deleteEntry(entry)
-            loadEntries()
-        } catch {
-            return
-        }
-    }
-
-    /// 時期フィルターを切り替える。
-    func selectPeriodFilter(_ period: MemoryPeriod?) {
-        selectedPeriodFilter = period
-    }
-
-    /// 相手フィルターを切り替える。
-    func selectPersonFilter(_ person: String?) {
-        selectedPersonFilter = person
-    }
-
     /// 内観ステータスフィルターを切り替える。
     func selectIntrospectionStatusFilter(_ status: MemoryIntrospectionStatus?) {
         selectedIntrospectionStatusFilter = status
     }
 
-    /// 記憶記録の日付表示テキストを返す。
-    func entryDateText(_ entry: MemoryEntry) -> String {
-        dateHelper.formattedDate(date: entry.createdAt)
-    }
-
     /// 記憶記録の相手表示テキストを返す。
     func peopleTags(_ entry: MemoryEntry) -> [String] {
         entry.people.isEmpty ? ["相手なし"] : entry.people
-    }
-
-    /// 記憶記録の内観ステータス表示テキストを返す。
-    func introspectionStatusText(_ entry: MemoryEntry) -> String {
-        entry.introspectionStatus.title
     }
 
     /// 記憶記録を読み込む。

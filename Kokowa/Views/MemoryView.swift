@@ -13,6 +13,8 @@ struct MemoryView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var authManager: AuthManager
     @StateObject private var viewModel = MemoryViewModel()
+    @State private var isInputPeriodPickerPresented = false
+    @State private var isFilterPeriodPickerPresented = false
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -44,6 +46,12 @@ struct MemoryView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
             viewModel.isKeyboardVisible = false
         }
+        .sheet(isPresented: $isInputPeriodPickerPresented) {
+            inputPeriodPickerSheetView()
+        }
+        .sheet(isPresented: $isFilterPeriodPickerPresented) {
+            filterPeriodPickerSheetView()
+        }
     }
 
     /// 日付・画面タイトル・補足文を表示するヘッダー。
@@ -54,13 +62,13 @@ struct MemoryView: View {
                 .font(.headline.weight(.bold))
                 .foregroundStyle(.secondaryTextGray)
 
-            Text("ネガティブ日記")
+            Text("ネガティブ記憶")
                 .font(.system(size: 42, weight: .bold, design: .rounded))
                 .foregroundStyle(.primaryTextBlack)
                 .lineLimit(1)
                 .minimumScaleFactor(0.72)
 
-            Text("心に残った出来事を、静かに見返す")
+            Text("ネガティブな出来事を、静かに見返す")
                 .font(.title3.weight(.bold))
                 .foregroundStyle(.secondaryTextGray)
         }
@@ -109,12 +117,8 @@ struct MemoryView: View {
         VStack(alignment: .leading, spacing: 10) {
             compactSectionTitleView(icon: "clock.arrow.circlepath", title: "時期", color: .kokowaTeal)
 
-            Menu {
-                ForEach(viewModel.periodOptions) { period in
-                    Button(period.title) {
-                        viewModel.selectedPeriod = period
-                    }
-                }
+            Button {
+                isInputPeriodPickerPresented = true
             } label: {
                 HStack {
                     Text(viewModel.selectedPeriod.title)
@@ -131,6 +135,7 @@ struct MemoryView: View {
                 .padding(.vertical, 12)
                 .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
+            .buttonStyle(.plain)
         }
         .padding(14)
         .background(Color.white.opacity(0.48), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
@@ -294,58 +299,50 @@ struct MemoryView: View {
     private func reviewFilterView() -> some View {
         VStack(spacing: 8) {
             HStack(spacing: 8) {
-                filterMenuView(
-                    icon: "person.2.fill",
-                    title: "相手",
-                    value: viewModel.selectedPersonFilterText,
-                    color: .kokowaPeriwinkle
-                ) {
-                    Button("すべて") {
-                        viewModel.selectPersonFilter(nil)
-                    }
-
-                    ForEach(viewModel.personFilterOptions, id: \.self) { person in
-                        Button(person) {
-                            viewModel.selectPersonFilter(person)
-                        }
-                    }
-                }
-
-                filterMenuView(
+                filterButtonView(
                     icon: "clock.arrow.circlepath",
                     title: "時期",
                     value: viewModel.selectedPeriodFilterText,
                     color: .kokowaRose
                 ) {
+                    isFilterPeriodPickerPresented = true
+                }
+
+                filterMenuView(
+                    icon: "checkmark.seal.fill",
+                    title: "内観",
+                    value: viewModel.selectedIntrospectionStatusFilterText,
+                    color: .kokowaTeal
+                ) {
                     Button("すべて") {
-                        viewModel.selectPeriodFilter(nil)
+                        viewModel.selectIntrospectionStatusFilter(nil)
                     }
 
-                    ForEach(viewModel.periodOptions) { period in
-                        Button(period.title) {
-                            viewModel.selectPeriodFilter(period)
+                    ForEach(viewModel.introspectionStatusOptions) { status in
+                        Button(status.title) {
+                            viewModel.selectIntrospectionStatusFilter(status)
                         }
                     }
                 }
             }
 
-            filterMenuView(
-                icon: "checkmark.seal.fill",
-                title: "内観",
-                value: viewModel.selectedIntrospectionStatusFilterText,
-                color: .kokowaTeal
-            ) {
-                Button("すべて") {
-                    viewModel.selectIntrospectionStatusFilter(nil)
-                }
-
-                ForEach(viewModel.introspectionStatusOptions) { status in
-                    Button(status.title) {
-                        viewModel.selectIntrospectionStatusFilter(status)
-                    }
-                }
-            }
+            personSearchFieldView()
         }
+    }
+
+    /// 時期選択用のボタン型フィルターを表示する。
+    @ViewBuilder
+    private func filterButtonView(
+        icon: String,
+        title: String,
+        value: String,
+        color: Color,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            filterLabelView(icon: icon, title: title, value: value, color: color)
+        }
+        .buttonStyle(.plain)
     }
 
     /// 見返し検索の選択メニューを表示する。
@@ -360,36 +357,130 @@ struct MemoryView: View {
         Menu {
             content()
         } label: {
-            HStack(spacing: 8) {
-                Image(systemName: icon)
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(color)
-                    .frame(width: 28, height: 28)
-                    .background(color.opacity(0.14), in: Circle())
+            filterLabelView(icon: icon, title: title, value: value, color: color)
+        }
+    }
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(.secondaryTextGray)
+    /// 見返し検索のラベルを表示する。
+    @ViewBuilder
+    private func filterLabelView(icon: String, title: String, value: String, color: Color) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.caption.weight(.bold))
+                .foregroundStyle(color)
+                .frame(width: 28, height: 28)
+                .background(color.opacity(0.14), in: Circle())
 
-                    Text(value)
-                        .font(.subheadline.weight(.bold))
-                        .foregroundStyle(.primaryTextBlack)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.72)
-                }
-
-                Spacer(minLength: 4)
-
-                Image(systemName: "chevron.down")
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
                     .font(.caption.weight(.bold))
                     .foregroundStyle(.secondaryTextGray)
+
+                Text(value)
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(.primaryTextBlack)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.72)
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 9)
-            .frame(maxWidth: .infinity)
-            .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+
+            Spacer(minLength: 4)
+
+            Image(systemName: "chevron.down")
+                .font(.caption.weight(.bold))
+                .foregroundStyle(.secondaryTextGray)
         }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 9)
+        .frame(maxWidth: .infinity)
+        .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+
+    /// 相手名で検索する入力欄を表示する。
+    @ViewBuilder
+    private func personSearchFieldView() -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "person.2.fill")
+                .font(.caption.weight(.bold))
+                .foregroundStyle(.kokowaPeriwinkle)
+                .frame(width: 28, height: 28)
+                .background(.kokowaPeriwinkle.opacity(0.14), in: Circle())
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("相手")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.secondaryTextGray)
+
+                TextField("相手の名前で検索", text: $viewModel.personSearchText)
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(.primaryTextBlack)
+                    .textInputAutocapitalization(.never)
+                    .submitLabel(.search)
+            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 9)
+        .frame(maxWidth: .infinity)
+        .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+
+    /// 入力用の時期ホイールピッカーを表示する。
+    @ViewBuilder
+    private func inputPeriodPickerSheetView() -> some View {
+        periodPickerSheetBase(title: "時期") {
+            Picker("時期", selection: $viewModel.selectedPeriod) {
+                ForEach(viewModel.periodOptions) { period in
+                    Text(period.title).tag(period)
+                }
+            }
+            .pickerStyle(.wheel)
+        } onDone: {
+            isInputPeriodPickerPresented = false
+        }
+    }
+
+    /// 検索用の時期ホイールピッカーを表示する。
+    @ViewBuilder
+    private func filterPeriodPickerSheetView() -> some View {
+        periodPickerSheetBase(title: "検索する時期") {
+            Picker("検索する時期", selection: $viewModel.selectedPeriodFilter) {
+                Text("すべて").tag(Optional<MemoryPeriod>.none)
+
+                ForEach(viewModel.periodOptions) { period in
+                    Text(period.title).tag(Optional(period))
+                }
+            }
+            .pickerStyle(.wheel)
+        } onDone: {
+            isFilterPeriodPickerPresented = false
+        }
+    }
+
+    /// 時期ホイールピッカーの共通シートを表示する。
+    @ViewBuilder
+    private func periodPickerSheetBase<Content: View>(
+        title: String,
+        @ViewBuilder content: () -> Content,
+        onDone: @escaping () -> Void
+    ) -> some View {
+        VStack(spacing: 8) {
+            HStack {
+                Text(title)
+                    .font(.headline.weight(.bold))
+                    .foregroundStyle(.primaryTextBlack)
+
+                Spacer()
+
+                Button("完了", action: onDone)
+                    .font(.headline.weight(.bold))
+                    .foregroundStyle(.kokowaTeal)
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 18)
+
+            content()
+                .frame(height: 150)
+        }
+        .presentationDetents([.height(240)])
     }
 
     /// 記憶記録がない時の表示を作る。
@@ -416,7 +507,7 @@ struct MemoryView: View {
     /// 記憶記録の一覧を表示する。
     @ViewBuilder
     private func memoryListView() -> some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 5) {
             ForEach(viewModel.filteredEntries) { entry in
                 memoryRowView(entry)
             }
@@ -426,52 +517,33 @@ struct MemoryView: View {
     /// 記憶記録の1行を表示する。
     @ViewBuilder
     private func memoryRowView(_ entry: MemoryEntry) -> some View {
-        HStack(alignment: .top, spacing: 10) {
-            Circle()
-                .fill(.kokowaRose)
-                .frame(width: 10, height: 10)
-                .padding(.top, 12)
-
-            VStack(alignment: .leading, spacing: 10) {
+        NavigationLink {
+            IntrospectionView(memoryEntry: entry)
+        } label: {
+            VStack(alignment: .leading, spacing: 5) {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 8) {
-                        FlowLayout(spacing: 6) {
-                            memoryTagView(text: entry.period.title, color: .kokowaRose)
-                            memoryTagView(text: viewModel.introspectionStatusText(entry), color: .kokowaTeal)
-
-                            ForEach(viewModel.peopleTags(entry), id: \.self) { person in
-                                memoryTagView(text: person, color: .kokowaPeriwinkle)
-                            }
-                        }
-
                         Text(entry.title)
                             .font(.headline.weight(.bold))
                             .foregroundStyle(.primaryTextBlack)
                             .fixedSize(horizontal: false, vertical: true)
 
-                        Text(viewModel.entryDateText(entry))
-                            .font(.caption.weight(.bold))
-                            .foregroundStyle(.secondaryTextGray)
-                    }
+                        FlowLayout(spacing: 6) {
+                            memoryTagView(text: entry.period.title, color: .kokowaRose)
+                            memoryTagView(text: entry.introspectionStatus.title, color: .kokowaTeal)
 
-                    Spacer(minLength: 10)
-
-                    Button {
-                        viewModel.deleteEntry(entry)
-                    } label: {
-                        Image(systemName: "trash")
-                            .font(.headline.weight(.bold))
-                            .foregroundStyle(.secondaryTextGray)
-                            .frame(width: 34, height: 34)
-                            .background(Color.white.opacity(0.62), in: Circle())
+                            ForEach(viewModel.peopleTags(entry), id: \.self) { person in
+                                memoryTagView(text: person, color: .kokowaPeriwinkle)
+                            }
+                        }
                     }
-                    .buttonStyle(.plain)
                 }
             }
             .padding(14)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.white.opacity(0.62), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
+        .buttonStyle(.plain)
     }
 
     /// 記憶記録の補助タグを表示する。

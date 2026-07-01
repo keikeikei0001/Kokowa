@@ -62,7 +62,7 @@ final class MemoryEntry {
 
     /// 保存した時期をenumとして返す。
     var period: MemoryPeriod {
-        MemoryPeriod(rawValue: periodRawValue) ?? .other
+        MemoryPeriod(rawValue: periodRawValue) ?? .preschool
     }
 
     /// 保存した内観ステータスをenumとして返す。

@@ -58,9 +58,24 @@ enum MemoryPeriod: String, CaseIterable, Identifiable {
     case elementary = "小学生"
     case juniorHigh = "中学生"
     case highSchool = "高校生"
-    case university = "大学生"
-    case adult = "社会人"
-    case other = "その他"
+    case universitySpecialized = "大学・専門"
+    case lateTeen = "10代後半"
+    case early20s = "20代前半"
+    case late20s = "20代後半"
+    case early30s = "30代前半"
+    case late30s = "30代後半"
+    case early40s = "40代前半"
+    case late40s = "40代後半"
+    case early50s = "50代前半"
+    case late50s = "50代後半"
+    case early60s = "60代前半"
+    case late60s = "60代後半"
+    case early70s = "70代前半"
+    case late70s = "70代後半"
+    case early80s = "80代前半"
+    case late80s = "80代後半"
+    case early90s = "90代前半"
+    case late90s = "90代後半"
 
     var id: String { rawValue }
     var title: String { rawValue }
@@ -73,4 +88,15 @@ enum MemoryIntrospectionStatus: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
     var title: String { rawValue }
+
+    var color: UIColor {
+        switch self {
+        case .notStarted:
+            return .kokowaRose
+        case .inProgress:
+            return .kokowaTerracotta
+        case .completed:
+            return .kokowaTeal
+        }
+    }
 }
