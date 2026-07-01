@@ -12,7 +12,7 @@ import Combine
 struct NegativeEmotionCategory: Identifiable {
     let title: String
     let emotions: [String]
-
+    
     var id: String { title }
 }
 
@@ -21,39 +21,40 @@ final class IntrospectionViewModel: ObservableObject {
     @Published var selectedPeriod: MemoryPeriod = .elementary
     @Published var personDraftText = ""
     @Published var people: [String] = []
-    @Published var eventDetailText = ""
+    @Published var factText = ""
     @Published var emotionText = ""
     @Published var bodyReactionText = ""
     @Published var thoughtText = ""
     @Published var desiredResponseText = ""
     @Published var desiredActionText = ""
+    @Published var insightText = ""
     @Published var isKeyboardVisible = false
     @Published var returnButtonTitle = "ホームに戻る"
     @Published var returnButtonIconName = "house.fill"
-
+    
     private let dateHelper = DateHelper()
     private var hasConfiguredMemoryEntry = false
-
+    
     /// 今日の日付表示用テキストを返す。
     var todayText: String {
         dateHelper.todayAddWeek()
     }
-
+    
     /// 時期の選択肢を返す。
     var periodOptions: [MemoryPeriod] {
         MemoryPeriod.allCases
     }
-
+    
     /// 相手追加ボタンを無効にするか判定する。
     var isAddPersonButtonDisabled: Bool {
         trimmedPersonDraftText.isEmpty
     }
-
+    
     /// 出来事欄のプレースホルダーを表示するか判定する。
-    var shouldShowEventDetailPlaceholder: Bool {
-        eventDetailText.isEmpty
+    var shouldShowFactPlaceholder: Bool {
+        factText.isEmpty
     }
-
+    
     /// 選択済みの感情を配列で返す。
     var selectedEmotions: [String] {
         emotionText
@@ -61,7 +62,7 @@ final class IntrospectionViewModel: ObservableObject {
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { $0.isEmpty == false }
     }
-
+    
     /// 感情の選択肢をカテゴリごとに返す。
     var negativeEmotionCategories: [NegativeEmotionCategory] {
         [
@@ -107,65 +108,69 @@ final class IntrospectionViewModel: ObservableObject {
             )
         ]
     }
-
+    
     /// 身体反応欄のプレースホルダーを表示するか判定する。
     var shouldShowBodyReactionPlaceholder: Bool {
         bodyReactionText.isEmpty
     }
-
+    
     /// 思考欄のプレースホルダーを表示するか判定する。
     var shouldShowThoughtPlaceholder: Bool {
         thoughtText.isEmpty
     }
-
+    
     /// どうして欲しかったのか欄のプレースホルダーを表示するか判定する。
     var shouldShowDesiredResponsePlaceholder: Bool {
         desiredResponseText.isEmpty
     }
-
+    
     /// どうしたかったのか欄のプレースホルダーを表示するか判定する。
     var shouldShowDesiredActionPlaceholder: Bool {
         desiredActionText.isEmpty
     }
-
+    
+    /// 出来事による気づき欄のプレースホルダーを表示するか判定する。
+    var shouldShowInsightPlaceholder: Bool {
+        insightText.isEmpty
+    }
+    
     private var trimmedPersonDraftText: String {
         personDraftText.trimmingCharacters(in: .whitespacesAndNewlines)
     }
-
+    
     /// 記憶記録の内容を内観画面の入力欄へ反映する。
     func configure(memoryEntry: MemoryEntry?) {
         updateReturnButton(memoryEntry: memoryEntry)
         guard hasConfiguredMemoryEntry == false, let memoryEntry else { return }
-
+        
         titleText = memoryEntry.title
-        eventDetailText = memoryEntry.title
         selectedPeriod = memoryEntry.period
         personDraftText = memoryEntry.people.first ?? ""
         people = Array(memoryEntry.people.dropFirst())
         hasConfiguredMemoryEntry = true
     }
-
+    
     /// 相手入力欄の内容を相手リストへ追加する。
     func addPerson() {
         let person = trimmedPersonDraftText
         guard person.isEmpty == false else { return }
-
+        
         people.append(person)
         personDraftText = ""
     }
-
+    
     /// 指定した相手を入力中の相手リストから削除する。
     func removePerson(at index: Int) {
         guard people.indices.contains(index) else { return }
         people.remove(at: index)
     }
-
+    
     /// 指定した相手の入力内容を更新する。
     func updatePerson(at index: Int, text: String) {
         guard people.indices.contains(index) else { return }
         people[index] = text
     }
-
+    
     /// 指定した感情を選択または解除する。
     func toggleEmotion(_ emotion: String) {
         var emotions = selectedEmotions
@@ -176,17 +181,17 @@ final class IntrospectionViewModel: ObservableObject {
         }
         emotionText = emotions.joined(separator: "、")
     }
-
+    
     /// 指定した感情が選択済みか判定する。
     func isEmotionSelected(_ emotion: String) -> Bool {
         selectedEmotions.contains(emotion)
     }
-
+    
     /// 選択中の感情をすべて解除する。
     func clearEmotions() {
         emotionText = ""
     }
-
+    
     /// 遷移元に合わせて戻るボタンの表示を切り替える。
     private func updateReturnButton(memoryEntry: MemoryEntry?) {
         if memoryEntry == nil {

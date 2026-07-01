@@ -30,6 +30,8 @@ struct IntrospectionView: View {
                     headerView()
                     eventCardView()
                     decompositionCardView()
+                    InnerVoiceView()
+                    insightView()
                 }
                 .padding(.horizontal, 22)
                 .padding(.top, 72)
@@ -113,8 +115,9 @@ struct IntrospectionView: View {
                 note: "解釈を省き、事実だけを書く。\n真実は解釈を含むが、事実は解釈を含みません。",
                 placeholder: "実際に起きたことだけを書く",
                 color: .kokowaTerracotta,
-                text: $viewModel.eventDetailText,
-                shouldShowPlaceholder: viewModel.shouldShowEventDetailPlaceholder
+                text: $viewModel.factText,
+                shouldShowPlaceholder: viewModel.shouldShowFactPlaceholder,
+                textMinHeight: 92
             )
             
             emotionSelectionFieldView()
@@ -125,7 +128,8 @@ struct IntrospectionView: View {
                 placeholder: "胸が苦しい、涙が出る、力が抜けるなど",
                 color: .kokowaPeriwinkle,
                 text: $viewModel.bodyReactionText,
-                shouldShowPlaceholder: viewModel.shouldShowBodyReactionPlaceholder
+                shouldShowPlaceholder: viewModel.shouldShowBodyReactionPlaceholder,
+                textMinHeight: 62
             )
             
             introspectionTextAreaView(
@@ -134,7 +138,22 @@ struct IntrospectionView: View {
                 placeholder: "その時に頭に浮かんだ言葉を書く",
                 color: .kokowaTeal,
                 text: $viewModel.thoughtText,
-                shouldShowPlaceholder: viewModel.shouldShowThoughtPlaceholder
+                shouldShowPlaceholder: viewModel.shouldShowThoughtPlaceholder,
+                textMinHeight: 92
+            )
+        }
+        .padding(18)
+        .kokowaCard(cornerRadius: 22)
+    }
+    
+    /// 自分の心の声に耳を傾けるための入力カードを表示する。
+    @ViewBuilder
+    private func InnerVoiceView() -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            cardTitleView(
+                icon: "heart.fill",
+                title: "心の声に耳を傾ける",
+                color: .kokowaRose
             )
             
             introspectionTextAreaView(
@@ -143,7 +162,8 @@ struct IntrospectionView: View {
                 placeholder: "相手や周りにして欲しかったことを書く",
                 color: .kokowaTerracotta,
                 text: $viewModel.desiredResponseText,
-                shouldShowPlaceholder: viewModel.shouldShowDesiredResponsePlaceholder
+                shouldShowPlaceholder: viewModel.shouldShowDesiredResponsePlaceholder,
+                textMinHeight: 92
             )
             
             introspectionTextAreaView(
@@ -152,8 +172,41 @@ struct IntrospectionView: View {
                 placeholder: "本当は自分がどう動きたかったのかを書く",
                 color: .kokowaTeal,
                 text: $viewModel.desiredActionText,
-                shouldShowPlaceholder: viewModel.shouldShowDesiredActionPlaceholder
+                shouldShowPlaceholder: viewModel.shouldShowDesiredActionPlaceholder,
+                textMinHeight: 92
             )
+        }
+        .padding(18)
+        .kokowaCard(cornerRadius: 22)
+    }
+    
+    /// 自分の心の声に耳を傾けるための入力カードを表示する。
+    @ViewBuilder
+    private func insightView() -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            cardTitleView(
+                icon: "lightbulb.fill",
+                title: "この出来事から何に気づけたか？",
+                color: .kokowaTerracotta
+            )
+            
+            TextEditor(text: $viewModel.insightText)
+                .font(.headline)
+                .foregroundStyle(.primaryTextBlack)
+                .scrollContentBackground(.hidden)
+                .frame(minHeight: 150)
+                .padding(14)
+                .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .overlay(alignment: .topLeading) {
+                    if viewModel.shouldShowInsightPlaceholder {
+                        Text("この出来事から気づいたことを自分が本音で思える範囲で書く")
+                            .font(.headline)
+                            .foregroundStyle(.secondaryTextGray.opacity(0.42))
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 22)
+                            .allowsHitTesting(false)
+                    }
+                }
         }
         .padding(18)
         .kokowaCard(cornerRadius: 22)
@@ -221,7 +274,8 @@ struct IntrospectionView: View {
         placeholder: String,
         color: Color,
         text: Binding<String>,
-        shouldShowPlaceholder: Bool
+        shouldShowPlaceholder: Bool,
+        textMinHeight: Double
     ) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             compactSectionTitleView(icon: icon, title: title, color: color)
@@ -237,7 +291,7 @@ struct IntrospectionView: View {
                 .font(.headline)
                 .foregroundStyle(.primaryTextBlack)
                 .scrollContentBackground(.hidden)
-                .frame(minHeight: 92)
+                .frame(minHeight: textMinHeight)
                 .padding(12)
                 .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .overlay(alignment: .topLeading) {
