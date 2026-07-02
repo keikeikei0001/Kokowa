@@ -66,8 +66,7 @@ struct MemoryView: View {
             Text("ネガティブ記憶")
                 .font(.system(size: 42, weight: .bold, design: .rounded))
                 .foregroundStyle(.primaryTextBlack)
-                .lineLimit(1)
-                .minimumScaleFactor(0.72)
+                .kokowaSingleLine()
 
             Text("ネガティブな出来事を、静かに見返す")
                 .font(.title3.weight(.bold))
@@ -106,7 +105,7 @@ struct MemoryView: View {
                 .textInputAutocapitalization(.never)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 12)
-                .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .kokowaSurface()
         }
         .padding(14)
         .background(Color.white.opacity(0.48), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
@@ -134,7 +133,7 @@ struct MemoryView: View {
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 12)
-                .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .kokowaSurface()
             }
             .buttonStyle(.plain)
         }
@@ -598,22 +597,8 @@ struct MemoryView: View {
     /// ホーム画面へ戻るためのボタンを表示する。
     @ViewBuilder
     private func returnButtonView() -> some View {
-        Button {
+        EmptyView().kokowaBottomReturnButton {
             dismiss()
-        } label: {
-            HStack(spacing: 10) {
-                Image(systemName: "house.fill")
-                    .font(.title3).bold()
-                Text("ホームに戻る")
-                    .font(.title3).bold()
-            }
-            .foregroundStyle(.gray)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 18)
-            .padding(.horizontal, 22)
-            .padding(.bottom, 18)
-            .background(Color(.kokowaCloud))
         }
-        .buttonStyle(.plain)
     }
 }

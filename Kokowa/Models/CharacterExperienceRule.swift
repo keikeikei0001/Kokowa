@@ -1,5 +1,5 @@
 //
-//  CharacterExperienceTable.swift
+//  CharacterExperienceRule.swift
 //  Kokowa
 //
 //  Created by Codex on 2026/07/02.
@@ -18,7 +18,8 @@ struct CharacterExperienceRule {
             return max(1, override)
         }
 
-        let requiredExperience = baseRequiredExperience + (Double(max(level, 1) - 1) * levelGrowth)
-        return max(1, Int(requiredExperience.rounded()))
+        let levelOffset = Double(max(level, 1) - 1)
+        let requiredExperience = baseRequiredExperience + (levelOffset * levelGrowth)
+        return NumberHelper.roundedInt(requiredExperience)
     }
 }

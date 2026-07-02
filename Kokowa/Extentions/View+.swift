@@ -68,6 +68,41 @@ extension View {
         modifier(KokowaCard(cornerRadius: cornerRadius))
     }
 
+    /// テキストなどを1行に収め、長い場合だけ縮小する。
+    func kokowaSingleLine(minimumScaleFactor: CGFloat = 0.72) -> some View {
+        lineLimit(1)
+            .minimumScaleFactor(minimumScaleFactor)
+    }
+
+    /// 半透明の白い角丸背景を適用する。
+    func kokowaSurface(opacity: Double = 0.58, cornerRadius: CGFloat = 16) -> some View {
+        background(Color.white.opacity(opacity), in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+    }
+
+    /// 画面下部に固定する戻るボタンを表示する。
+    func kokowaBottomReturnButton(
+        title: String = "ホームに戻る",
+        iconName: String = "house.fill",
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                Image(systemName: iconName)
+                    .font(.title3).bold()
+
+                Text(title)
+                    .font(.title3).bold()
+            }
+            .foregroundStyle(.gray)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 18)
+            .padding(.horizontal, 22)
+            .padding(.bottom, 18)
+            .background(Color(.kokowaCloud))
+        }
+        .buttonStyle(.plain)
+    }
+
     /// 画面タップ時にキーボードを閉じる。
     func hideKeyboardOnTap() -> some View {
         onTapGesture {
@@ -83,15 +118,15 @@ extension View {
     /// アプリ共通の背景グラデーションを表示する。
     @ViewBuilder
     func KokowaBackground() -> some View {
-            LinearGradient(
-                colors: [
-                    .kokowaGrand1,
-                    .kokowaGrand2,
-                    .kokowaGrand3
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-        }
+        LinearGradient(
+            colors: [
+                .kokowaGrand1,
+                .kokowaGrand2,
+                .kokowaGrand3
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .ignoresSafeArea()
+    }
 }

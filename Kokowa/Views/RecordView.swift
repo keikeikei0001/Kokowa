@@ -382,22 +382,8 @@ struct RecordView: View {
     /// ホーム画面へ戻るためのボタンを表示する。
     @ViewBuilder
     private func returnButtonView() -> some View {
-        Button {
+        EmptyView().kokowaBottomReturnButton {
             dismiss()
-        } label: {
-            HStack(spacing: 10) {
-                Image(systemName: "house.fill")
-                    .font(.title3).bold()
-                Text("ホームに戻る")
-                    .font(.title3).bold()
-            }
-            .foregroundStyle(.gray)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 18)
-            .padding(.horizontal, 22)
-            .padding(.bottom, 18)
-            .background(Color(.kokowaCloud))
         }
-        .buttonStyle(.plain)
     }
 }

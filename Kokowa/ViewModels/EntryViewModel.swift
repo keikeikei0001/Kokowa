@@ -108,7 +108,7 @@ final class EntryViewModel: ObservableObject {
 
         let progress = min(max(Double(locationX / trackWidth), 0), 1)
         let rawValue = range.lowerBound + ((range.upperBound - range.lowerBound) * progress)
-        let steppedValue = (rawValue / step).rounded() * step
+        let steppedValue = NumberHelper.rounded(rawValue, step: step)
         return min(max(steppedValue, range.lowerBound), range.upperBound)
     }
 

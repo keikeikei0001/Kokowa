@@ -16,20 +16,16 @@ class KeychainRepository: ObservableObject {
     func saveToKeychain(userIdentifier: String) {
         do {
             try keychain.set(userIdentifier, key: "appleUserIdentifier")
-            print("Keychainに保存しました: \(userIdentifier)")
-        } catch let error {
-            print("Keychainへの保存に失敗しました: \(error.localizedDescription)")
+        } catch {
+            return
         }
     }
     
     /// ユーザーIDをキーチェインから取得する
     func loadFromKeychain() -> String? {
         do {
-            let userIdentifier = try keychain.get("appleUserIdentifier")
-            print("Keychainから読み込みました: \(userIdentifier ?? "nil")")
-            return userIdentifier
-        } catch let error {
-            print("Keychainからの読み込みに失敗しました: \(error.localizedDescription)")
+            return try keychain.get("appleUserIdentifier")
+        } catch {
             return nil
         }
     }
@@ -38,9 +34,8 @@ class KeychainRepository: ObservableObject {
     func deleteFromKeychain() {
         do {
             try keychain.remove("appleUserIdentifier")
-            print("Keychainから削除しました")
-        } catch let error {
-            print("Keychainからの削除に失敗しました: \(error.localizedDescription)")
+        } catch {
+            return
         }
     }
 }
