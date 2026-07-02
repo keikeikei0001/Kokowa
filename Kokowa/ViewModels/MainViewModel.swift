@@ -35,7 +35,10 @@ class MainViewModel: ObservableObject {
             return "0 / 10"
         }
 
-        let requiredExperience = characterRepository?.requiredExperience(for: activeCharacter.level) ?? 10
+        let requiredExperience = characterRepository?.requiredExperience(
+            characterId: activeCharacter.characterId,
+            level: activeCharacter.level
+        ) ?? 10
         return "\(activeCharacter.experiencePoint) / \(requiredExperience)"
     }
 

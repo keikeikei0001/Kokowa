@@ -27,7 +27,7 @@ final class EntryViewModel: ObservableObject {
     private var characterRepository: CharacterRepository?
     private var userProfileRepository: UserProfileRepository?
 
-    private let saveExperiencePoint = 5
+    private let saveExperiencePoint = 1
 
     /// 今日の日付表示用テキストを返す。
     var todayText: String {

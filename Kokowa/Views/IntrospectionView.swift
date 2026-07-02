@@ -13,10 +13,6 @@ struct IntrospectionView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var authManager: AuthManager
     @StateObject private var viewModel = IntrospectionViewModel()
-    @State private var isInputPeriodPickerPresented = false
-    @State private var isEmotionSelectionPresented = false
-    @State private var isSchemaSelectionPresented = false
-    @State private var isEmotionFeelingSessionPresented = false
 
     let memoryEntry: MemoryEntry?
 
@@ -62,118 +58,19 @@ struct IntrospectionView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
             viewModel.isKeyboardVisible = false
         }
-        .sheet(isPresented: $isInputPeriodPickerPresented) {
+        .sheet(isPresented: $viewModel.isInputPeriodPickerPresented) {
             inputPeriodPickerSheetView()
         }
-        .sheet(isPresented: $isEmotionSelectionPresented) {
+        .sheet(isPresented: $viewModel.isEmotionSelectionPresented) {
             emotionSelectionSheetView()
         }
-        .sheet(isPresented: $isSchemaSelectionPresented) {
+        .sheet(isPresented: $viewModel.isSchemaSelectionPresented) {
             schemaSelectionSheetView()
         }
-        .fullScreenCover(isPresented: $isEmotionFeelingSessionPresented) {
+        .fullScreenCover(isPresented: $viewModel.isEmotionFeelingSessionPresented) {
             EmotionFeelingSessionView()
         }
         .alert($viewModel.alert)
-    }
-
-    /// 感情を吐き出すための入力カードを表示する。
-    @ViewBuilder
-    private func emotionReleaseView() -> some View {
-        VStack(alignment: .leading, spacing: 14) {
-            cardTitleView(
-                icon: "flame.fill",
-                title: "感情を吐き出す",
-                color: .kokowaRose
-            )
-
-            TextEditor(text: $viewModel.emotionReleaseText)
-                .font(.headline)
-                .foregroundStyle(.primaryTextBlack)
-                .scrollContentBackground(.hidden)
-                .frame(minHeight: 150)
-                .padding(14)
-                .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .overlay(alignment: .topLeading) {
-                    if viewModel.shouldShowEmotionReleasePlaceholder {
-                        Text("感情を言葉にして、吐き出しましょう！汚い言葉を使っても構いません。紙に書いたり、誰にも聞かれないところで叫ぶのもおすすめです")
-                            .font(.headline)
-                            .foregroundStyle(.secondaryTextGray.opacity(0.42))
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 22)
-                            .allowsHitTesting(false)
-                    }
-                }
-
-            resetCardButtonView(title: "感情を吐き出すをリセット") {
-                viewModel.resetEmotionReleaseCard()
-            }
-        }
-        .padding(18)
-        .kokowaCard(cornerRadius: 22)
-    }
-
-    /// 反応している可能性がある早期不適応スキーマを選ぶカードを表示する。
-    @ViewBuilder
-    private func schemaAwarenessCardView() -> some View {
-        VStack(alignment: .leading, spacing: 14) {
-            cardTitleView(
-                icon: "heart.text.square.fill",
-                title: "思考の奥にあるスキーマに気づく",
-                color: .kokowaPeriwinkle
-            )
-
-            HStack(alignment: .top, spacing: 10) {
-                Text("幼少期の経験から作られた「心のパターン」や「心の傷」が今回の出来事に反応している可能性があります。\n当てはまりそうなものを選びましょう。")
-                    .font(.subheadline.weight(.bold))
-                    .foregroundStyle(.secondaryTextGray)
-                    .fixedSize(horizontal: false, vertical: true)
-
-                Button {
-                    viewModel.showSchemaInfoAlert()
-                } label: {
-                    Image(systemName: "info.circle.fill")
-                        .font(.title3.weight(.bold))
-                        .foregroundStyle(.kokowaPeriwinkle)
-                }
-                .buttonStyle(.plain)
-            }
-
-            Button {
-                isSchemaSelectionPresented = true
-            } label: {
-                HStack(spacing: 10) {
-                    if viewModel.selectedSchemaItems.isEmpty {
-                        Text("スキーマを選ぶ")
-                            .font(.headline.weight(.bold))
-                            .foregroundStyle(.secondaryTextGray.opacity(0.42))
-                    } else {
-                        FlowLayout(spacing: 6) {
-                            ForEach(viewModel.selectedSchemaItems) { schema in
-                                schemaChipView(schema.title)
-                            }
-                        }
-                    }
-
-                    Spacer(minLength: 5)
-
-                    Image(systemName: "chevron.down")
-                        .font(.headline.weight(.bold))
-                        .foregroundStyle(.secondaryTextGray)
-                }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 12)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-            }
-            .buttonStyle(.plain)
-
-            resetCardButtonView(title: "スキーマをリセット") {
-                viewModel.resetSchemaCard()
-            }
-        }
-        .padding(18)
-        .kokowaCard(cornerRadius: 22)
     }
 
     /// 日付・画面タイトル・補足文を表示するヘッダー。
@@ -202,6 +99,24 @@ struct IntrospectionView: View {
         }
     }
 
+    /// この出来事を削除するボタンを表示する。
+    @ViewBuilder
+    private func deleteButtonView() -> some View {
+        Button {
+            viewModel.showDeleteConfirmation {
+                dismiss()
+            }
+        } label: {
+            Image(systemName: "trash.fill")
+                .font(.headline.weight(.bold))
+                .foregroundStyle(.kokowaRose)
+                .frame(width: 42, height: 42)
+                .background(Color.white.opacity(0.72), in: Circle())
+                .shadow(color: .kokowaRose.opacity(0.12), radius: 10, x: 0, y: 6)
+        }
+        .buttonStyle(.plain)
+    }
+
     /// 内観するネガティブな出来事の入力カードを表示する。
     @ViewBuilder
     private func eventCardView() -> some View {
@@ -216,7 +131,7 @@ struct IntrospectionView: View {
             periodPickerView()
             peopleInputView()
 
-            resetCardButtonView(title: "出来事をリセット") {
+            resetCardButtonView(title: "出来事カード") {
                 viewModel.resetEventCard()
             }
         }
@@ -277,7 +192,7 @@ struct IntrospectionView: View {
                 textMinHeight: 92
             )
 
-            resetCardButtonView(title: "分解した内容をリセット") {
+            resetCardButtonView(title: "出来事の分解カード") {
                 viewModel.resetDecompositionCard()
             }
         }
@@ -285,11 +200,146 @@ struct IntrospectionView: View {
         .kokowaCard(cornerRadius: 22)
     }
 
-    /// 感情を感じるセッションをするカードを表示する。
+    /// 感情を吐き出すための入力カードを表示する。
+    @ViewBuilder
+    private func emotionReleaseView() -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            cardTitleView(
+                icon: "flame.fill",
+                title: "感情を吐き出す",
+                color: .kokowaRose
+            )
+
+            TextEditor(text: $viewModel.emotionReleaseText)
+                .font(.headline)
+                .foregroundStyle(.primaryTextBlack)
+                .scrollContentBackground(.hidden)
+                .frame(minHeight: 150)
+                .padding(14)
+                .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .overlay(alignment: .topLeading) {
+                    if viewModel.shouldShowEmotionReleasePlaceholder {
+                        Text("感情を言葉にして、吐き出しましょう！汚い言葉を使っても構いません。紙に書いたり、誰にも聞かれないところで叫ぶのもおすすめです")
+                            .font(.headline)
+                            .foregroundStyle(.secondaryTextGray.opacity(0.42))
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 22)
+                            .allowsHitTesting(false)
+                    }
+                }
+
+            resetCardButtonView(title: "感情を吐き出すカード") {
+                viewModel.resetEmotionReleaseCard()
+            }
+        }
+        .padding(18)
+        .kokowaCard(cornerRadius: 22)
+    }
+
+    /// 反応している可能性がある早期不適応スキーマを選ぶカードを表示する。
+    @ViewBuilder
+    private func schemaAwarenessCardView() -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            cardTitleView(
+                icon: "heart.text.square.fill",
+                title: "思考の奥にあるスキーマに気づく",
+                color: .kokowaPeriwinkle
+            )
+
+            HStack(alignment: .top, spacing: 10) {
+                Text("幼少期の経験から作られた「心のパターン」や「心の傷」が今回の出来事に反応している可能性があります。\n当てはまりそうなものを選びましょう。")
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(.secondaryTextGray)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Button {
+                    viewModel.showSchemaInfoAlert()
+                } label: {
+                    Image(systemName: "info.circle.fill")
+                        .font(.title3.weight(.bold))
+                        .foregroundStyle(.kokowaPeriwinkle)
+                }
+                .buttonStyle(.plain)
+            }
+
+            Button {
+                viewModel.isSchemaSelectionPresented = true
+            } label: {
+                HStack(spacing: 10) {
+                    if viewModel.selectedSchemaItems.isEmpty {
+                        Text("スキーマを選ぶ")
+                            .font(.headline.weight(.bold))
+                            .foregroundStyle(.secondaryTextGray.opacity(0.42))
+                    } else {
+                        FlowLayout(spacing: 6) {
+                            ForEach(viewModel.selectedSchemaItems) { schema in
+                                schemaChipView(schema.title)
+                            }
+                        }
+                    }
+
+                    Spacer(minLength: 5)
+
+                    Image(systemName: "chevron.down")
+                        .font(.headline.weight(.bold))
+                        .foregroundStyle(.secondaryTextGray)
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            }
+            .buttonStyle(.plain)
+
+            resetCardButtonView(title: "スキーマを選ぶカード") {
+                viewModel.resetSchemaCard()
+            }
+        }
+        .padding(18)
+        .kokowaCard(cornerRadius: 22)
+    }
+
+    /// 出来事から得られた気づきの入力カードを表示する。
+    @ViewBuilder
+    private func insightView() -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            cardTitleView(
+                icon: "lightbulb.fill",
+                title: "この出来事から何に気づけたか？",
+                color: .kokowaTerracotta
+            )
+
+            TextEditor(text: $viewModel.insightText)
+                .font(.headline)
+                .foregroundStyle(.primaryTextBlack)
+                .scrollContentBackground(.hidden)
+                .frame(minHeight: 150)
+                .padding(14)
+                .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .overlay(alignment: .topLeading) {
+                    if viewModel.shouldShowInsightPlaceholder {
+                        Text("この出来事から気づいたことを自分が本音で思える範囲で書く")
+                            .font(.headline)
+                            .foregroundStyle(.secondaryTextGray.opacity(0.42))
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 22)
+                            .allowsHitTesting(false)
+                    }
+                }
+
+            resetCardButtonView(title: "気づきカード") {
+                viewModel.resetInsightCard()
+            }
+        }
+        .padding(18)
+        .kokowaCard(cornerRadius: 22)
+    }
+
+    /// 感情を感じ切るセッションをするカードを表示する。
     @ViewBuilder
     private func emotionFeelingSessionView() -> some View {
         Button {
-            isEmotionFeelingSessionPresented = true
+            viewModel.isEmotionFeelingSessionPresented = true
         } label: {
             VStack(alignment: .leading, spacing: 14) {
                 cardTitleView(
@@ -367,44 +417,8 @@ struct IntrospectionView: View {
                 textMinHeight: 92
             )
 
-            resetCardButtonView(title: "心の声をリセット") {
+            resetCardButtonView(title: "心の声カード") {
                 viewModel.resetInnerVoiceCard()
-            }
-        }
-        .padding(18)
-        .kokowaCard(cornerRadius: 22)
-    }
-
-    /// 自分の心の声に耳を傾けるための入力カードを表示する。
-    @ViewBuilder
-    private func insightView() -> some View {
-        VStack(alignment: .leading, spacing: 14) {
-            cardTitleView(
-                icon: "lightbulb.fill",
-                title: "この出来事から何に気づけたか？",
-                color: .kokowaTerracotta
-            )
-
-            TextEditor(text: $viewModel.insightText)
-                .font(.headline)
-                .foregroundStyle(.primaryTextBlack)
-                .scrollContentBackground(.hidden)
-                .frame(minHeight: 150)
-                .padding(14)
-                .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .overlay(alignment: .topLeading) {
-                    if viewModel.shouldShowInsightPlaceholder {
-                        Text("この出来事から気づいたことを自分が本音で思える範囲で書く")
-                            .font(.headline)
-                            .foregroundStyle(.secondaryTextGray.opacity(0.42))
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 22)
-                            .allowsHitTesting(false)
-                    }
-                }
-
-            resetCardButtonView(title: "気づきをリセット") {
-                viewModel.resetInsightCard()
             }
         }
         .padding(18)
@@ -422,7 +436,7 @@ struct IntrospectionView: View {
                     Image(systemName: "tray.and.arrow.down.fill")
                         .font(.headline.weight(.bold))
 
-                    Text("保存")
+                    Text("途中保存")
                         .font(.headline.weight(.bold))
                 }
                 .foregroundStyle(.white)
@@ -465,24 +479,6 @@ struct IntrospectionView: View {
         }
     }
 
-    /// この出来事を削除するボタンを表示する。
-    @ViewBuilder
-    private func deleteButtonView() -> some View {
-        Button {
-            viewModel.showDeleteConfirmation {
-                dismiss()
-            }
-        } label: {
-            Image(systemName: "trash.fill")
-                .font(.headline.weight(.bold))
-                .foregroundStyle(.kokowaRose)
-                .frame(width: 42, height: 42)
-                .background(Color.white.opacity(0.72), in: Circle())
-                .shadow(color: .kokowaRose.opacity(0.12), radius: 10, x: 0, y: 6)
-        }
-        .buttonStyle(.plain)
-    }
-
     /// カード内の入力内容を画面上だけ消すリセットボタンを表示する。
     @ViewBuilder
     private func resetCardButtonView(title: String, action: @escaping () -> Void) -> some View {
@@ -512,7 +508,7 @@ struct IntrospectionView: View {
             compactSectionTitleView(icon: "heart.fill", title: "感情", color: .kokowaRose)
 
             Button {
-                isEmotionSelectionPresented = true
+                viewModel.isEmotionSelectionPresented = true
             } label: {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack(spacing: 10) {
@@ -569,7 +565,7 @@ struct IntrospectionView: View {
             .background(.kokowaPeriwinkle.opacity(0.12), in: Capsule())
     }
 
-    /// 内観の分解項目を入力する複数行欄を表示する。
+    /// 内観の項目を入力する複数行欄を表示する。
     @ViewBuilder
     private func introspectionTextAreaView(
         icon: String,
@@ -638,7 +634,7 @@ struct IntrospectionView: View {
             compactSectionTitleView(icon: "clock.arrow.circlepath", title: "時期", color: .kokowaTeal)
 
             Button {
-                isInputPeriodPickerPresented = true
+                viewModel.isInputPeriodPickerPresented = true
             } label: {
                 HStack {
                     Text(viewModel.selectedPeriod.title)
@@ -774,7 +770,7 @@ struct IntrospectionView: View {
                 Spacer()
 
                 Button("完了") {
-                    isInputPeriodPickerPresented = false
+                    viewModel.isInputPeriodPickerPresented = false
                 }
                 .font(.headline.weight(.bold))
                 .foregroundStyle(.kokowaTeal)
@@ -819,7 +815,7 @@ struct IntrospectionView: View {
 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("完了") {
-                        isEmotionSelectionPresented = false
+                        viewModel.isEmotionSelectionPresented = false
                     }
                     .font(.headline.weight(.bold))
                     .foregroundStyle(.kokowaTeal)
@@ -898,7 +894,7 @@ struct IntrospectionView: View {
 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("完了") {
-                        isSchemaSelectionPresented = false
+                        viewModel.isSchemaSelectionPresented = false
                         viewModel.showSchemaSelectionCompletedAlert()
                     }
                     .font(.headline.weight(.bold))

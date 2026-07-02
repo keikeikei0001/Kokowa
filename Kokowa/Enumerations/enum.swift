@@ -12,10 +12,10 @@ enum EntryCondition: String, CaseIterable, Identifiable {
     case good = "良い"
     case slightlyBad = "少し悪い"
     case bad = "悪い"
-
+    
     var id: String { rawValue }
     var title: String { rawValue }
-
+    
     var iconName: String {
         switch self {
         case .excellent:
@@ -35,10 +35,10 @@ enum StressLevel: String, CaseIterable, Identifiable {
     case high = "高い"
     case normal = "少し高い"
     case low = "普通以下"
-
+    
     var id: String { rawValue }
     var title: String { rawValue }
-
+    
     var iconName: String {
         switch self {
         case .veryHigh:
@@ -76,7 +76,7 @@ enum MemoryPeriod: String, CaseIterable, Identifiable {
     case late80s = "80代後半"
     case early90s = "90代前半"
     case late90s = "90代後半"
-
+    
     var id: String { rawValue }
     var title: String { rawValue }
 }
@@ -85,10 +85,10 @@ enum MemoryIntrospectionStatus: String, CaseIterable, Identifiable {
     case notStarted = "未内観"
     case inProgress = "内観中"
     case completed = "内観済"
-
+    
     var id: String { rawValue }
     var title: String { rawValue }
-
+    
     var color: UIColor {
         switch self {
         case .notStarted:
@@ -98,5 +98,37 @@ enum MemoryIntrospectionStatus: String, CaseIterable, Identifiable {
         case .completed:
             return .kokowaTeal
         }
+    }
+}
+
+enum CharacterExperienceTable {
+    private static let defaultRule = CharacterExperienceRule(
+        baseRequiredExperience: 3,
+        levelGrowth: 0.5,
+        levelOverrides: [1: 1]
+    )
+    
+    static let rulesByCharacterId: [String: CharacterExperienceRule] = [
+        "kumaneko0001": CharacterExperienceRule(
+            baseRequiredExperience: 3, // レベル1から2に必要な経験値
+            levelGrowth: 0.5,           // レベルが上がるたびに増える量
+            levelOverrides: [1: 1]         // 例: [5: 80] と書くとレベル5だけ80に固定
+        ),
+        "uruhuneko0001": CharacterExperienceRule(
+            baseRequiredExperience: 3, // レベル1から2に必要な経験値
+            levelGrowth: 0.5,           // レベルが上がるたびに増える量
+            levelOverrides: [1: 1]         // 例: [5: 80] と書くとレベル5だけ80に固定
+        ),
+        "usaneko0001": CharacterExperienceRule(
+            baseRequiredExperience: 3, // レベル1から2に必要な経験値
+            levelGrowth: 0.5,           // レベルが上がるたびに増える量
+            levelOverrides: [1: 1]         // 例: [5: 80] と書くとレベル5だけ80に固定
+        )
+    ]
+    
+    /// キャラクターIDと現在レベルに応じた必要経験値を返す。
+    static func requiredExperience(characterId: String, level: Int) -> Int {
+        let rule = rulesByCharacterId[characterId] ?? defaultRule
+        return rule.requiredExperience(for: level)
     }
 }

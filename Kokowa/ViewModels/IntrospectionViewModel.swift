@@ -50,6 +50,10 @@ final class IntrospectionViewModel: ObservableObject {
     @Published var returnButtonIconName = "house.fill"
     @Published var saveResultText = ""
     @Published var alert: AlertContext?
+    @Published var isInputPeriodPickerPresented = false
+    @Published var isEmotionSelectionPresented = false
+    @Published var isSchemaSelectionPresented = false
+    @Published var isEmotionFeelingSessionPresented = false
 
     private let dateHelper = DateHelper()
     private var userId: String?
@@ -461,7 +465,7 @@ final class IntrospectionViewModel: ObservableObject {
     func showDeleteConfirmation(onDelete: @escaping () -> Void) {
         alert = AlertContext(
             title: "この出来事を削除しますか？",
-            message: "この出来事に保存されている情報をすべて削除します。この操作は取り消せません。",
+            message: "この出来事に関する情報をすべて削除します。この操作は取り消せません。",
             actions: [
                 AlertContext.Action(title: "キャンセル", role: .cancel) { [weak self] _ in
                     self?.alert = nil
@@ -480,7 +484,7 @@ final class IntrospectionViewModel: ObservableObject {
     func showResetConfirmation(title: String, onReset: @escaping () -> Void) {
         alert = AlertContext(
             title: "入力内容をリセットしますか？",
-            message: "\(title)の内容を画面上だけ消します。保存済みデータは、保存ボタンを押すまで変更されません。",
+            message: "\(title)の入力内容をすべて、リセットします。リセット内容を保存したい場合は、保存ボタンを押す必要があります。",
             actions: [
                 AlertContext.Action(title: "キャンセル", role: .cancel) { [weak self] _ in
                     self?.alert = nil

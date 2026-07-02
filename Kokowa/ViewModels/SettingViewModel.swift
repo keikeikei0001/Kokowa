@@ -48,7 +48,7 @@ final class SettingViewModel: ObservableObject {
     func handleLogoutTap() {
         alert = AlertContext(
             title: "ログアウトしますか？",
-            message: "保存データは残したまま、最初の画面へ戻ります。",
+            message: "ログアウト状態になり、最初の画面へ戻ります。",
             actions: [
                 AlertContext.Action(title: "キャンセル", role: .cancel) { [weak self] _ in
                     self?.alert = nil
@@ -65,7 +65,7 @@ final class SettingViewModel: ObservableObject {
     func handleDeleteAccountTap() {
         alert = AlertContext(
             title: "アカウントを削除しますか？",
-            message: "この端末に保存されているユーザーID、キャラクター、記入記録、記憶記録をすべて削除します。この操作は取り消せません。",
+            message: "この端末に保存されているこのアカウントに関する情報をすべて削除します。この操作は取り消せません。",
             actions: [
                 AlertContext.Action(title: "キャンセル", role: .cancel) { [weak self] _ in
                     self?.alert = nil
