@@ -8,18 +8,19 @@
 import Foundation
 import SwiftUI
 import Combine
+import SwiftData
 
 struct NegativeEmotionCategory: Identifiable {
     let title: String
     let emotions: [String]
-    
+
     var id: String { title }
 }
 
 struct FeelingReactionCategory: Identifiable {
     let title: String
     let feelings: [String]
-    
+
     var id: String { title }
 }
 
@@ -41,40 +42,44 @@ final class IntrospectionViewModel: ObservableObject {
     @Published var isKeyboardVisible = false
     @Published var returnButtonTitle = "ホームに戻る"
     @Published var returnButtonIconName = "house.fill"
-    
+    @Published var saveResultText = ""
+
     private let dateHelper = DateHelper()
+    private var userId: String?
+    private var memoryEntry: MemoryEntry?
+    private var memoryEntryRepository: MemoryEntryRepository?
     private var hasConfiguredMemoryEntry = false
-    
+
     /// 今日の日付表示用テキストを返す。
     var todayText: String {
         dateHelper.todayAddWeek()
     }
-    
+
     /// 時期の選択肢を返す。
     var periodOptions: [MemoryPeriod] {
         MemoryPeriod.allCases
     }
-    
+
     /// 相手追加ボタンを無効にするか判定する。
     var isAddPersonButtonDisabled: Bool {
         trimmedPersonDraftText.isEmpty
     }
-    
+
     /// 新しく入力する相手欄の番号を返す。
     var personDraftNumberText: String {
         "\(people.count + 1)"
     }
-    
+
     /// 感情吐き出し欄のプレースホルダーを表示するか判定する。
     var shouldShowEmotionReleasePlaceholder: Bool {
         emotionReleaseText.isEmpty
     }
-    
+
     /// 事実欄のプレースホルダーを表示するか判定する。
     var shouldShowFactPlaceholder: Bool {
         factText.isEmpty
     }
-    
+
     /// 選択済みの感情を配列で返す。
     var selectedEmotions: [String] {
         emotionText
@@ -82,7 +87,7 @@ final class IntrospectionViewModel: ObservableObject {
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { $0.isEmpty == false }
     }
-    
+
     /// 選択済みの気持ちを配列で返す。
     var selectedFeelings: [String] {
         feelingText
@@ -90,7 +95,7 @@ final class IntrospectionViewModel: ObservableObject {
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { $0.isEmpty == false }
     }
-    
+
     /// 感情の選択肢をカテゴリごとに返す。
     var negativeEmotionCategories: [NegativeEmotionCategory] {
         [
@@ -136,7 +141,7 @@ final class IntrospectionViewModel: ObservableObject {
             )
         ]
     }
-    
+
     /// 気持ちの選択肢をカテゴリごとに返す。
     var feelingReactionCategories: [FeelingReactionCategory] {
         [
@@ -206,74 +211,102 @@ final class IntrospectionViewModel: ObservableObject {
             )
         ]
     }
-    
+
     /// 身体反応欄のプレースホルダーを表示するか判定する。
     var shouldShowBodyReactionPlaceholder: Bool {
         bodyReactionText.isEmpty
     }
-    
+
     /// 思考欄のプレースホルダーを表示するか判定する。
     var shouldShowThoughtPlaceholder: Bool {
         thoughtText.isEmpty
     }
-    
+
     /// どうして欲しかったのか欄のプレースホルダーを表示するか判定する。
     var shouldShowDesiredResponsePlaceholder: Bool {
         desiredResponseText.isEmpty
     }
-    
+
     /// 何を恐れていたのか欄のプレースホルダーを表示するか判定する。
     var shouldShowFearPlaceholder: Bool {
         fearText.isEmpty
     }
-    
+
     /// どうしたかったのか欄のプレースホルダーを表示するか判定する。
     var shouldShowDesiredActionPlaceholder: Bool {
         desiredActionText.isEmpty
     }
-    
+
     /// 出来事による気づき欄のプレースホルダーを表示するか判定する。
     var shouldShowInsightPlaceholder: Bool {
         insightText.isEmpty
     }
-    
+
+    /// 内観保存ボタンを無効にするか判定する。
+    var isIntrospectionSaveDisabled: Bool {
+        userId == nil
+    }
+
     private var trimmedPersonDraftText: String {
         personDraftText.trimmingCharacters(in: .whitespacesAndNewlines)
     }
-    
+
     /// 記憶記録の内容を内観画面の入力欄へ反映する。
-    func configure(memoryEntry: MemoryEntry?) {
+    func configure(modelContext: ModelContext, userId: String?, memoryEntry: MemoryEntry?) {
+        self.userId = userId
+        self.memoryEntryRepository = LocalMemoryEntryRepository(modelContext: modelContext)
+
         updateReturnButton(memoryEntry: memoryEntry)
         guard hasConfiguredMemoryEntry == false, let memoryEntry else { return }
-        
+
+        self.memoryEntry = memoryEntry
         titleText = memoryEntry.title
         selectedPeriod = memoryEntry.period
         personDraftText = ""
         people = memoryEntry.people
+        factText = memoryEntry.factText
+        emotionText = memoryEntry.emotionText
+        feelingText = memoryEntry.feelingText
+        bodyReactionText = memoryEntry.bodyReactionText
+        thoughtText = memoryEntry.thoughtText
+        desiredResponseText = memoryEntry.desiredResponseText
+        fearText = memoryEntry.fearText
+        desiredActionText = memoryEntry.desiredActionText
+        insightText = memoryEntry.insightText
         hasConfiguredMemoryEntry = true
     }
-    
+
+    /// 内観を保存し、内観ステータスを内観中にする。
+    func saveInProgressIntrospection() {
+        saveIntrospection(status: .inProgress)
+    }
+
+    /// 内観を保存し、内観ステータスを内観済にする。
+    func completeIntrospection() {
+        saveIntrospection(status: .completed)
+    }
+
     /// 相手入力欄の内容を相手リストへ追加する。
     func addPerson() {
         let person = trimmedPersonDraftText
         guard person.isEmpty == false else { return }
-        
+
         people.append(person)
         personDraftText = ""
     }
-    
+
     /// 指定した相手を入力中の相手リストから削除する。
     func removePerson(at index: Int) {
         guard people.indices.contains(index) else { return }
         people.remove(at: index)
     }
-    
+
     /// 指定した相手の入力内容を更新する。
     func updatePerson(at index: Int, text: String) {
         guard people.indices.contains(index) else { return }
         people[index] = text
     }
-    
+
     /// 指定した感情を選択または解除する。
     func toggleEmotion(_ emotion: String) {
         var emotions = selectedEmotions
@@ -284,17 +317,17 @@ final class IntrospectionViewModel: ObservableObject {
         }
         emotionText = emotions.joined(separator: "、")
     }
-    
+
     /// 指定した感情が選択済みか判定する。
     func isEmotionSelected(_ emotion: String) -> Bool {
         selectedEmotions.contains(emotion)
     }
-    
+
     /// 選択中の感情をすべて解除する。
     func clearEmotions() {
         emotionText = ""
     }
-    
+
     /// 指定した気持ちを選択または解除する。
     func toggleFeeling(_ feeling: String) {
         var feelings = selectedFeelings
@@ -305,17 +338,17 @@ final class IntrospectionViewModel: ObservableObject {
         }
         feelingText = feelings.joined(separator: "、")
     }
-    
+
     /// 指定した気持ちが選択済みか判定する。
     func isFeelingSelected(_ feeling: String) -> Bool {
         selectedFeelings.contains(feeling)
     }
-    
+
     /// 選択中の気持ちをすべて解除する。
     func clearFeelings() {
         feelingText = ""
     }
-    
+
     /// 遷移元に合わせて戻るボタンの表示を切り替える。
     private func updateReturnButton(memoryEntry: MemoryEntry?) {
         if memoryEntry == nil {
@@ -325,5 +358,51 @@ final class IntrospectionViewModel: ObservableObject {
             returnButtonTitle = "記憶画面に戻る"
             returnButtonIconName = "heart.text.square.fill"
         }
+    }
+
+    /// 感情吐き出し欄以外の内観内容を保存する。
+    private func saveIntrospection(status: MemoryIntrospectionStatus) {
+        guard
+            let userId,
+            let memoryEntryRepository
+        else {
+            return
+        }
+
+        do {
+            memoryEntry = try memoryEntryRepository.saveIntrospection(
+                entry: memoryEntry,
+                userId: userId,
+                title: normalizedTitleText(),
+                period: selectedPeriod,
+                people: normalizedPeople(),
+                introspectionStatus: status,
+                factText: factText,
+                emotionText: emotionText,
+                feelingText: feelingText,
+                bodyReactionText: bodyReactionText,
+                thoughtText: thoughtText,
+                desiredResponseText: desiredResponseText,
+                fearText: fearText,
+                desiredActionText: desiredActionText,
+                insightText: insightText
+            )
+            saveResultText = status == .completed ? "内観済として保存しました" : "内観中として保存しました"
+        } catch {
+            saveResultText = "保存できませんでした"
+        }
+    }
+
+    /// 保存用にタイトルを整える。
+    private func normalizedTitleText() -> String {
+        let title = titleText.trimmingCharacters(in: .whitespacesAndNewlines)
+        return title.isEmpty ? "無題の出来事" : title
+    }
+
+    /// 保存用に相手リストを整える。
+    private func normalizedPeople() -> [String] {
+        (people + [personDraftText])
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { $0.isEmpty == false }
     }
 }

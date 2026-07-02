@@ -21,6 +21,25 @@ protocol MemoryEntryRepository {
         people: [String]
     ) throws
 
+    /// 内観内容を保存する。
+    func saveIntrospection(
+        entry: MemoryEntry?,
+        userId: String,
+        title: String,
+        period: MemoryPeriod,
+        people: [String],
+        introspectionStatus: MemoryIntrospectionStatus,
+        factText: String,
+        emotionText: String,
+        feelingText: String,
+        bodyReactionText: String,
+        thoughtText: String,
+        desiredResponseText: String,
+        fearText: String,
+        desiredActionText: String,
+        insightText: String
+    ) throws -> MemoryEntry
+
     /// 指定した記憶記録を削除する。
     func deleteEntry(_ entry: MemoryEntry) throws
 }
@@ -61,6 +80,56 @@ final class LocalMemoryEntryRepository: MemoryEntryRepository {
         )
         modelContext.insert(entry)
         try modelContext.save()
+    }
+
+    /// 内観内容を保存する。
+    func saveIntrospection(
+        entry: MemoryEntry?,
+        userId: String,
+        title: String,
+        period: MemoryPeriod,
+        people: [String],
+        introspectionStatus: MemoryIntrospectionStatus,
+        factText: String,
+        emotionText: String,
+        feelingText: String,
+        bodyReactionText: String,
+        thoughtText: String,
+        desiredResponseText: String,
+        fearText: String,
+        desiredActionText: String,
+        insightText: String
+    ) throws -> MemoryEntry {
+        let savedEntry = entry ?? MemoryEntry(
+            userId: userId,
+            title: title,
+            period: period,
+            introspectionStatus: introspectionStatus,
+            people: people
+        )
+
+        savedEntry.userId = userId
+        savedEntry.title = title
+        savedEntry.periodRawValue = period.rawValue
+        savedEntry.people = people
+        savedEntry.introspectionStatusRawValue = introspectionStatus.rawValue
+        savedEntry.factText = factText
+        savedEntry.emotionText = emotionText
+        savedEntry.feelingText = feelingText
+        savedEntry.bodyReactionText = bodyReactionText
+        savedEntry.thoughtText = thoughtText
+        savedEntry.desiredResponseText = desiredResponseText
+        savedEntry.fearText = fearText
+        savedEntry.desiredActionText = desiredActionText
+        savedEntry.insightText = insightText
+        savedEntry.updatedAt = Date()
+
+        if entry == nil {
+            modelContext.insert(savedEntry)
+        }
+
+        try modelContext.save()
+        return savedEntry
     }
 
     /// 指定した記憶記録を削除する。

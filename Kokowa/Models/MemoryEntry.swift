@@ -16,6 +16,15 @@ final class MemoryEntry {
     var periodRawValue: String
     var introspectionStatusRawValue: String = MemoryIntrospectionStatus.notStarted.rawValue
     var peopleData: Data
+    var factText: String = ""
+    var emotionText: String = ""
+    var feelingText: String = ""
+    var bodyReactionText: String = ""
+    var thoughtText: String = ""
+    var desiredResponseText: String = ""
+    var fearText: String = ""
+    var desiredActionText: String = ""
+    var insightText: String = ""
     var createdAt: Date
     var updatedAt: Date
 
@@ -27,6 +36,15 @@ final class MemoryEntry {
         period: MemoryPeriod,
         introspectionStatus: MemoryIntrospectionStatus = .notStarted,
         people: [String],
+        factText: String = "",
+        emotionText: String = "",
+        feelingText: String = "",
+        bodyReactionText: String = "",
+        thoughtText: String = "",
+        desiredResponseText: String = "",
+        fearText: String = "",
+        desiredActionText: String = "",
+        insightText: String = "",
         createdAt: Date = Date(),
         updatedAt: Date = Date()
     ) {
@@ -36,6 +54,15 @@ final class MemoryEntry {
         self.periodRawValue = period.rawValue
         self.introspectionStatusRawValue = introspectionStatus.rawValue
         self.peopleData = Self.encodePeople(people)
+        self.factText = factText
+        self.emotionText = emotionText
+        self.feelingText = feelingText
+        self.bodyReactionText = bodyReactionText
+        self.thoughtText = thoughtText
+        self.desiredResponseText = desiredResponseText
+        self.fearText = fearText
+        self.desiredActionText = desiredActionText
+        self.insightText = insightText
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
