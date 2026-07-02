@@ -29,9 +29,9 @@ protocol MemoryEntryRepository {
         period: MemoryPeriod,
         people: [String],
         introspectionStatus: MemoryIntrospectionStatus,
+        schemaIds: [String],
         factText: String,
         emotionText: String,
-        feelingText: String,
         bodyReactionText: String,
         thoughtText: String,
         desiredResponseText: String,
@@ -90,9 +90,9 @@ final class LocalMemoryEntryRepository: MemoryEntryRepository {
         period: MemoryPeriod,
         people: [String],
         introspectionStatus: MemoryIntrospectionStatus,
+        schemaIds: [String],
         factText: String,
         emotionText: String,
-        feelingText: String,
         bodyReactionText: String,
         thoughtText: String,
         desiredResponseText: String,
@@ -112,10 +112,10 @@ final class LocalMemoryEntryRepository: MemoryEntryRepository {
         savedEntry.title = title
         savedEntry.periodRawValue = period.rawValue
         savedEntry.people = people
+        savedEntry.schemaIds = schemaIds
         savedEntry.introspectionStatusRawValue = introspectionStatus.rawValue
         savedEntry.factText = factText
         savedEntry.emotionText = emotionText
-        savedEntry.feelingText = feelingText
         savedEntry.bodyReactionText = bodyReactionText
         savedEntry.thoughtText = thoughtText
         savedEntry.desiredResponseText = desiredResponseText

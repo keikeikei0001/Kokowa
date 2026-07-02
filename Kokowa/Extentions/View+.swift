@@ -18,19 +18,19 @@ extension View {
                 context.wrappedValue = nil
             }
         }
-        
-        if let context = context.wrappedValue {
-            alert(context.title, isPresented: isPresented) {
+
+        self.alert(context.wrappedValue?.title ?? "", isPresented: isPresented) {
+            if let context = context.wrappedValue {
                 ForEach(Array(context.actions.enumerated()), id: \.self.element.id) { _, action in
                     Button(action.title, role: action.role) {
                         action.action(action)
                     }
                 }
-            } message: {
+            }
+        } message: {
+            if let context = context.wrappedValue {
                 Text(context.message)
             }
-        } else {
-            self
         }
     }
     
@@ -95,4 +95,3 @@ extension View {
             .ignoresSafeArea()
         }
 }
-

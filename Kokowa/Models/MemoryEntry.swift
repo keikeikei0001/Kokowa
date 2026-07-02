@@ -16,9 +16,9 @@ final class MemoryEntry {
     var periodRawValue: String
     var introspectionStatusRawValue: String = MemoryIntrospectionStatus.notStarted.rawValue
     var peopleData: Data
+    var schemaIdsData: Data = Data()
     var factText: String = ""
     var emotionText: String = ""
-    var feelingText: String = ""
     var bodyReactionText: String = ""
     var thoughtText: String = ""
     var desiredResponseText: String = ""
@@ -36,9 +36,9 @@ final class MemoryEntry {
         period: MemoryPeriod,
         introspectionStatus: MemoryIntrospectionStatus = .notStarted,
         people: [String],
+        schemaIds: [String] = [],
         factText: String = "",
         emotionText: String = "",
-        feelingText: String = "",
         bodyReactionText: String = "",
         thoughtText: String = "",
         desiredResponseText: String = "",
@@ -53,10 +53,10 @@ final class MemoryEntry {
         self.title = title
         self.periodRawValue = period.rawValue
         self.introspectionStatusRawValue = introspectionStatus.rawValue
-        self.peopleData = Self.encodePeople(people)
+        self.peopleData = Self.encodeStringArray(people)
+        self.schemaIdsData = Self.encodeStringArray(schemaIds)
         self.factText = factText
         self.emotionText = emotionText
-        self.feelingText = feelingText
         self.bodyReactionText = bodyReactionText
         self.thoughtText = thoughtText
         self.desiredResponseText = desiredResponseText
@@ -67,23 +67,33 @@ final class MemoryEntry {
         self.updatedAt = updatedAt
     }
 
-    /// 相手リストを保存用Dataへ変換する。
-    private static func encodePeople(_ people: [String]) -> Data {
-        (try? JSONEncoder().encode(people)) ?? Data()
+    /// 文字列リストを保存用Dataへ変換する。
+    private static func encodeStringArray(_ values: [String]) -> Data {
+        (try? JSONEncoder().encode(values)) ?? Data()
     }
 
-    /// 保存用Dataを相手リストへ変換する。
-    private static func decodePeople(_ data: Data) -> [String] {
+    /// 保存用Dataを文字列リストへ変換する。
+    private static func decodeStringArray(_ data: Data) -> [String] {
         (try? JSONDecoder().decode([String].self, from: data)) ?? []
     }
 
     /// 保存した相手リストを配列として返す。
     var people: [String] {
         get {
-            Self.decodePeople(peopleData)
+            Self.decodeStringArray(peopleData)
         }
         set {
-            peopleData = Self.encodePeople(newValue)
+            peopleData = Self.encodeStringArray(newValue)
+        }
+    }
+
+    /// 保存したスキーマIDを配列として返す。
+    var schemaIds: [String] {
+        get {
+            Self.decodeStringArray(schemaIdsData)
+        }
+        set {
+            schemaIdsData = Self.encodeStringArray(newValue)
         }
     }
 

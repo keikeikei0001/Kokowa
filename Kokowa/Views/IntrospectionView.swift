@@ -15,7 +15,7 @@ struct IntrospectionView: View {
     @StateObject private var viewModel = IntrospectionViewModel()
     @State private var isInputPeriodPickerPresented = false
     @State private var isEmotionSelectionPresented = false
-    @State private var isFeelingSelectionPresented = false
+    @State private var isSchemaSelectionPresented = false
     @State private var isEmotionFeelingSessionPresented = false
 
     let memoryEntry: MemoryEntry?
@@ -35,9 +35,10 @@ struct IntrospectionView: View {
                     eventCardView()
                     decompositionCardView()
                     emotionReleaseView()
-                    InnerVoiceView()
-                    emotionFeelingSsesionView()
+                    schemaAwarenessCardView()
                     insightView()
+                    emotionFeelingSessionView()
+                    InnerVoiceView()
                     saveActionButtonsView()
                 }
                 .padding(.horizontal, 22)
@@ -66,12 +67,13 @@ struct IntrospectionView: View {
         .sheet(isPresented: $isEmotionSelectionPresented) {
             emotionSelectionSheetView()
         }
-        .sheet(isPresented: $isFeelingSelectionPresented) {
-            feelingSelectionSheetView()
+        .sheet(isPresented: $isSchemaSelectionPresented) {
+            schemaSelectionSheetView()
         }
         .fullScreenCover(isPresented: $isEmotionFeelingSessionPresented) {
             EmotionFeelingSessionView()
         }
+        .alert($viewModel.alert)
     }
 
     /// 感情を吐き出すための入力カードを表示する。
@@ -101,6 +103,65 @@ struct IntrospectionView: View {
                             .allowsHitTesting(false)
                     }
                 }
+        }
+        .padding(18)
+        .kokowaCard(cornerRadius: 22)
+    }
+
+    /// 反応している可能性がある早期不適応スキーマを選ぶカードを表示する。
+    @ViewBuilder
+    private func schemaAwarenessCardView() -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            cardTitleView(
+                icon: "heart.text.square.fill",
+                title: "思考の奥にあるスキーマに気づく",
+                color: .kokowaPeriwinkle
+            )
+
+            HStack(alignment: .top, spacing: 10) {
+                Text("幼少期の経験から作られた「心のパターン」や「心の傷」が今回の出来事に反応している可能性があります。\n当てはまりそうなものを選びましょう。")
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(.secondaryTextGray)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Button {
+                    viewModel.showSchemaInfoAlert()
+                } label: {
+                    Image(systemName: "info.circle.fill")
+                        .font(.title3.weight(.bold))
+                        .foregroundStyle(.kokowaPeriwinkle)
+                }
+                .buttonStyle(.plain)
+            }
+
+            Button {
+                isSchemaSelectionPresented = true
+            } label: {
+                HStack(spacing: 10) {
+                    if viewModel.selectedSchemaItems.isEmpty {
+                        Text("スキーマを選ぶ")
+                            .font(.headline.weight(.bold))
+                            .foregroundStyle(.secondaryTextGray.opacity(0.42))
+                    } else {
+                        FlowLayout(spacing: 6) {
+                            ForEach(viewModel.selectedSchemaItems) { schema in
+                                schemaChipView(schema.title)
+                            }
+                        }
+                    }
+
+                    Spacer(minLength: 5)
+
+                    Image(systemName: "chevron.down")
+                        .font(.headline.weight(.bold))
+                        .foregroundStyle(.secondaryTextGray)
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            }
+            .buttonStyle(.plain)
         }
         .padding(18)
         .kokowaCard(cornerRadius: 22)
@@ -193,7 +254,7 @@ struct IntrospectionView: View {
 
     /// 感情を感じるセッションをするカードを表示する。
     @ViewBuilder
-    private func emotionFeelingSsesionView() -> some View {
+    private func emotionFeelingSessionView() -> some View {
         Button {
             isEmotionFeelingSessionPresented = true
         } label: {
@@ -363,11 +424,11 @@ struct IntrospectionView: View {
         }
     }
 
-    /// 感情・気持ちを選ぶ入力欄を表示する。
+    /// 感情を選ぶ入力欄を表示する。
     @ViewBuilder
     private func emotionSelectionFieldView() -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            compactSectionTitleView(icon: "heart.fill", title: "感情・気持ち", color: .kokowaRose)
+            compactSectionTitleView(icon: "heart.fill", title: "感情", color: .kokowaRose)
 
             Button {
                 isEmotionSelectionPresented = true
@@ -382,38 +443,6 @@ struct IntrospectionView: View {
                             }
                         } else {
                             Text("感情に名前をつける")
-                                .font(.headline.weight(.bold))
-                                .foregroundStyle(.secondaryTextGray.opacity(0.42))
-                                .lineLimit(2)
-                                .multilineTextAlignment(.leading)
-                        }
-                        Spacer(minLength: 5)
-
-                        Image(systemName: "chevron.down")
-                            .font(.headline.weight(.bold))
-                            .foregroundStyle(.secondaryTextGray)
-                    }
-                }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 12)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-            }
-            .buttonStyle(.plain)
-
-            Button {
-                isFeelingSelectionPresented = true
-            } label: {
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack(spacing: 10) {
-                        if viewModel.selectedFeelings.isEmpty == false {
-                            FlowLayout(spacing: 6) {
-                                ForEach(viewModel.selectedFeelings, id: \.self) { feeling in
-                                    feelingChipView(feeling)
-                                }
-                            }
-                        } else {
-                            Text("気持ちに名前をつける")
                                 .font(.headline.weight(.bold))
                                 .foregroundStyle(.secondaryTextGray.opacity(0.42))
                                 .lineLimit(2)
@@ -448,15 +477,15 @@ struct IntrospectionView: View {
             .background(.kokowaRose.opacity(0.12), in: Capsule())
     }
 
-    /// 選択済みの気持ちタグを表示する。
+    /// 選択済みのスキーマタグを表示する。
     @ViewBuilder
-    private func feelingChipView(_ feeling: String) -> some View {
-        Text(feeling)
+    private func schemaChipView(_ schemaTitle: String) -> some View {
+        Text(schemaTitle)
             .font(.caption.weight(.bold))
-            .foregroundStyle(.kokowaTerracotta)
+            .foregroundStyle(.kokowaPeriwinkle)
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
-            .background(.kokowaTerracotta.opacity(0.12), in: Capsule())
+            .background(.kokowaPeriwinkle.opacity(0.12), in: Capsule())
     }
 
     /// 内観の分解項目を入力する複数行欄を表示する。
@@ -683,7 +712,7 @@ struct IntrospectionView: View {
         .presentationDetents([.height(240)])
     }
 
-    /// 感情・気持ちの選択シートを表示する。
+    /// 感情の選択シートを表示する。
     @ViewBuilder
     private func emotionSelectionSheetView() -> some View {
         NavigationStack {
@@ -697,7 +726,7 @@ struct IntrospectionView: View {
                 .padding(.vertical, 16)
             }
             .background(Color(.kokowaCloud).opacity(0.35))
-            .navigationTitle("感情・気持ち")
+            .navigationTitle("感情")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -762,33 +791,34 @@ struct IntrospectionView: View {
         .buttonStyle(.plain)
     }
 
-    /// 気持ちの選択シートを表示する。
+    /// 早期不適応スキーマの選択シートを表示する。
     @ViewBuilder
-    private func feelingSelectionSheetView() -> some View {
+    private func schemaSelectionSheetView() -> some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 LazyVStack(alignment: .leading, spacing: 16) {
-                    ForEach(viewModel.feelingReactionCategories) { category in
-                        feelingCategoryView(category)
+                    ForEach(viewModel.earlyMaladaptiveSchemaCategories) { category in
+                        schemaCategoryView(category)
                     }
                 }
                 .padding(.horizontal, 18)
                 .padding(.vertical, 16)
             }
             .background(Color(.kokowaCloud).opacity(0.35))
-            .navigationTitle("気持ち")
+            .navigationTitle("早期不適応スキーマ")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("クリア") {
-                        viewModel.clearFeelings()
+                        viewModel.clearSchemas()
                     }
-                    .foregroundStyle(.kokowaTerracotta)
+                    .foregroundStyle(.kokowaPeriwinkle)
                 }
 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("完了") {
-                        isFeelingSelectionPresented = false
+                        isSchemaSelectionPresented = false
+                        viewModel.showSchemaSelectionCompletedAlert()
                     }
                     .font(.headline.weight(.bold))
                     .foregroundStyle(.kokowaTeal)
@@ -798,17 +828,24 @@ struct IntrospectionView: View {
         .presentationDetents([.large])
     }
 
-    /// 気持ちカテゴリ内の選択肢を表示する。
+    /// スキーマカテゴリ内の選択肢を表示する。
     @ViewBuilder
-    private func feelingCategoryView(_ category: FeelingReactionCategory) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(category.title)
-                .font(.headline.weight(.bold))
-                .foregroundStyle(.primaryTextBlack)
+    private func schemaCategoryView(_ category: EarlyMaladaptiveSchemaCategory) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(category.title)
+                    .font(.headline.weight(.bold))
+                    .foregroundStyle(.primaryTextBlack)
 
-            FlowLayout(spacing: 8) {
-                ForEach(category.feelings, id: \.self) { feeling in
-                    feelingOptionButtonView(feeling)
+                Text(category.description)
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.secondaryTextGray)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            VStack(spacing: 8) {
+                ForEach(category.schemas) { schema in
+                    schemaOptionButtonView(schema)
                 }
             }
         }
@@ -816,27 +853,35 @@ struct IntrospectionView: View {
         .background(Color.white.opacity(0.68), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
-    /// 気持ちを選択または解除するボタンを表示する。
+    /// スキーマを選択または解除するボタンを表示する。
     @ViewBuilder
-    private func feelingOptionButtonView(_ feeling: String) -> some View {
-        let isSelected = viewModel.isFeelingSelected(feeling)
+    private func schemaOptionButtonView(_ schema: EarlyMaladaptiveSchemaItem) -> some View {
+        let isSelected = viewModel.isSchemaSelected(schema)
 
         Button {
-            viewModel.toggleFeeling(feeling)
+            viewModel.toggleSchema(schema)
         } label: {
-            HStack(spacing: 6) {
-                Text(feeling)
-                    .font(.subheadline.weight(.bold))
+            HStack(alignment: .top, spacing: 10) {
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(schema.title)
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(isSelected ? .white : .primaryTextBlack)
 
-                if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
+                    Text(schema.description)
                         .font(.caption.weight(.bold))
+                        .foregroundStyle(isSelected ? .white.opacity(0.86) : .secondaryTextGray)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
+
+                Spacer()
+
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.headline.weight(.bold))
+                    .foregroundStyle(isSelected ? .white : .secondaryTextGray.opacity(0.45))
             }
-            .foregroundStyle(isSelected ? .white : .primaryTextBlack)
             .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(isSelected ? Color.kokowaTerracotta : Color.white.opacity(0.74), in: Capsule())
+            .padding(.vertical, 10)
+            .background(isSelected ? Color.kokowaPeriwinkle : Color.white.opacity(0.74), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
         .buttonStyle(.plain)
     }

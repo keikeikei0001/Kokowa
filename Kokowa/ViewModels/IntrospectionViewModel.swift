@@ -17,9 +17,16 @@ struct NegativeEmotionCategory: Identifiable {
     var id: String { title }
 }
 
-struct FeelingReactionCategory: Identifiable {
+struct EarlyMaladaptiveSchemaItem: Identifiable {
+    let id: String
     let title: String
-    let feelings: [String]
+    let description: String
+}
+
+struct EarlyMaladaptiveSchemaCategory: Identifiable {
+    let title: String
+    let description: String
+    let schemas: [EarlyMaladaptiveSchemaItem]
 
     var id: String { title }
 }
@@ -30,9 +37,9 @@ final class IntrospectionViewModel: ObservableObject {
     @Published var personDraftText = ""
     @Published var people: [String] = []
     @Published var emotionReleaseText = ""
+    @Published var selectedSchemaIds: [String] = []
     @Published var factText = ""
     @Published var emotionText = ""
-    @Published var feelingText = ""
     @Published var bodyReactionText = ""
     @Published var thoughtText = ""
     @Published var desiredResponseText = ""
@@ -43,6 +50,7 @@ final class IntrospectionViewModel: ObservableObject {
     @Published var returnButtonTitle = "ホームに戻る"
     @Published var returnButtonIconName = "house.fill"
     @Published var saveResultText = ""
+    @Published var alert: AlertContext?
 
     private let dateHelper = DateHelper()
     private var userId: String?
@@ -83,14 +91,6 @@ final class IntrospectionViewModel: ObservableObject {
     /// 選択済みの感情を配列で返す。
     var selectedEmotions: [String] {
         emotionText
-            .components(separatedBy: "、")
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .filter { $0.isEmpty == false }
-    }
-
-    /// 選択済みの気持ちを配列で返す。
-    var selectedFeelings: [String] {
-        feelingText
             .components(separatedBy: "、")
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { $0.isEmpty == false }
@@ -142,74 +142,137 @@ final class IntrospectionViewModel: ObservableObject {
         ]
     }
 
-    /// 気持ちの選択肢をカテゴリごとに返す。
-    var feelingReactionCategories: [FeelingReactionCategory] {
+    /// 早期不適応スキーマの選択肢をカテゴリごとに返す。
+    var earlyMaladaptiveSchemaCategories: [EarlyMaladaptiveSchemaCategory] {
         [
-            FeelingReactionCategory(
-                title: "傷つき・圧迫",
-                feelings: [
-                    "あざけられた",
-                    "あやつられた",
-                    "威圧された",
-                    "息が詰まった",
-                    "いらだった",
-                    "裏切られた",
-                    "追い出された",
-                    "追いつめられた",
-                    "脅かされた",
-                    "おとしめられた",
-                    "格下げされた",
-                    "価値を下げられた"
+            EarlyMaladaptiveSchemaCategory(
+                title: "第1領域: 人との関わりが断絶されること",
+                description: "「愛してもらいたい」「守ってもらいたい」「理解してもらいたい」という中核的感情欲求が満たされなかった時に生まれやすい領域です。",
+                schemas: [
+                    EarlyMaladaptiveSchemaItem(
+                        id: "abandonment",
+                        title: "見捨てられスキーマ",
+                        description: "人は自分を見捨てていく、自分はいつも見捨てられると感じやすい心のパターンです。相手がそばにいても、いつか去っていくと強く信じやすくなります。"
+                    ),
+                    EarlyMaladaptiveSchemaItem(
+                        id: "mistrust_abuse",
+                        title: "不信・虐待スキーマ",
+                        description: "人は自分を攻撃する、奪う、だますかもしれないと警戒しやすい心のパターンです。親切にされても裏があるのではないかと疑いやすくなります。"
+                    ),
+                    EarlyMaladaptiveSchemaItem(
+                        id: "emotional_deprivation",
+                        title: "「愛されない」「わかってもらえない」スキーマ",
+                        description: "自分は愛されない、理解されない、守られないと感じやすい心のパターンです。愛されたい、わかってほしいという願いが強く出ることもあります。"
+                    ),
+                    EarlyMaladaptiveSchemaItem(
+                        id: "defectiveness_shame",
+                        title: "欠陥・恥スキーマ",
+                        description: "自分は根本的にダメな人間で、そんな自分は恥ずかしい存在だと感じやすい心のパターンです。欠陥が人に知られないように振る舞いやすくなります。"
+                    ),
+                    EarlyMaladaptiveSchemaItem(
+                        id: "social_isolation",
+                        title: "孤立スキーマ",
+                        description: "自分は変わり者で、世界から孤立していて、誰とも交われないと感じやすい心のパターンです。本当は居場所を求めている場合もあります。"
+                    )
                 ]
             ),
-            FeelingReactionCategory(
-                title: "拒絶・攻撃",
-                feelings: [
-                    "傷つけられた",
-                    "気分を害された",
-                    "拒絶された",
-                    "嫌われた",
-                    "軽蔑された",
-                    "攻撃された",
-                    "告発された",
-                    "裁かれた",
-                    "しつこく悩まされた",
-                    "叱責された"
+            EarlyMaladaptiveSchemaCategory(
+                title: "第2領域: 「できない自分」にしかなれないこと",
+                description: "「有能な人間になりたい」「いろんなことがうまくできるようになりたい」という中核的感情欲求が満たされなかった時に生まれやすい領域です。",
+                schemas: [
+                    EarlyMaladaptiveSchemaItem(
+                        id: "dependence_incompetence",
+                        title: "無能・依存スキーマ",
+                        description: "自分はできない人間で、自分ひとりではまともにできないと感じやすい心のパターンです。新しい課題に尻込みしたり、人の助けを求めやすくなります。"
+                    ),
+                    EarlyMaladaptiveSchemaItem(
+                        id: "vulnerability",
+                        title: "「世の中は何があるかわからないし、自分は簡単にやられてしまう」スキーマ",
+                        description: "自分の身に恐ろしいことが起きるかもしれず、起きたら自分では対処できないと感じやすい心のパターンです。身体の異変や周囲の変化に敏感になりやすくなります。"
+                    ),
+                    EarlyMaladaptiveSchemaItem(
+                        id: "enmeshment",
+                        title: "巻き込まれスキーマ",
+                        description: "自分は誰かに巻き込まれていて、自分というものがないと感じやすい心のパターンです。相手の考えや感情を、自分のもののように感じることがあります。"
+                    ),
+                    EarlyMaladaptiveSchemaItem(
+                        id: "failure",
+                        title: "失敗スキーマ",
+                        description: "自分は何をやっても失敗する、これからも失敗ばかりするだろうと感じやすい心のパターンです。挑戦を避けたり、課題を先延ばしにしやすくなります。"
+                    )
                 ]
             ),
-            FeelingReactionCategory(
-                title: "支配・侵害",
-                feelings: [
-                    "支配された",
-                    "侵入された",
-                    "捨てられた",
-                    "責められた",
-                    "だまされた",
-                    "付け込まれた",
-                    "つぶされた",
-                    "なおざりにされた",
-                    "盗まれた",
-                    "離れた"
+            EarlyMaladaptiveSchemaCategory(
+                title: "第3領域: 他者を優先し、自分を抑えること",
+                description: "「自分の感情や思いを自由に表現したい」「自分の意志を大切にしたい」という中核的感情欲求が満たされなかった時に生まれやすい領域です。",
+                schemas: [
+                    EarlyMaladaptiveSchemaItem(
+                        id: "subjugation",
+                        title: "服従スキーマ",
+                        description: "嫌われたくない、見捨てられたくない、攻撃されたくないという思いから、相手に従いやすくなる心のパターンです。自分の感情や欲求を置き去りにしやすくなります。"
+                    ),
+                    EarlyMaladaptiveSchemaItem(
+                        id: "self_sacrifice",
+                        title: "自己犠牲スキーマ",
+                        description: "自分より相手を優先するのは当然だと感じやすい心のパターンです。相手のつらさを減らすために、自分が何とかしなければならないと感じやすくなります。"
+                    ),
+                    EarlyMaladaptiveSchemaItem(
+                        id: "approval_seeking",
+                        title: "「ほめられたい」「評価されたい」スキーマ",
+                        description: "他人の評価がすべてで、認められたい、ほめられたいという思いが強くなりやすい心のパターンです。自分の好みや意志より、評価されるかどうかで行動を選びやすくなります。"
+                    )
                 ]
             ),
-            FeelingReactionCategory(
-                title: "否定・孤立",
-                feelings: [
-                    "はねつけられた",
-                    "否定された",
-                    "侮辱された",
-                    "暴行された",
-                    "見捨てられた",
-                    "むごく扱われた",
-                    "無視された",
-                    "汚された",
-                    "理解されない",
-                    "利用された",
-                    "罠にはめられた",
-                    "笑いものにされた"
+            EarlyMaladaptiveSchemaCategory(
+                title: "第4領域: 物事を悲観し、自分や他人を追い詰めること",
+                description: "「自由にのびのびと動きたい」「楽しく遊びたい」「生き生きと楽しみたい」という中核的感情欲求が満たされなかった時に生まれやすい領域です。",
+                schemas: [
+                    EarlyMaladaptiveSchemaItem(
+                        id: "negativity_pessimism",
+                        title: "否定・悲観スキーマ",
+                        description: "人生や物事の否定的な面ばかりを見て、悲観しやすい心のパターンです。常に悪い方向を考え、心配や警戒が強くなりやすいです。"
+                    ),
+                    EarlyMaladaptiveSchemaItem(
+                        id: "emotional_inhibition",
+                        title: "感情抑制スキーマ",
+                        description: "怒り、楽しさ、悲しみなどの感情を感じたり外に出したりしてはならないと抑えやすい心のパターンです。感情がないかのように淡々と振る舞うことがあります。"
+                    ),
+                    EarlyMaladaptiveSchemaItem(
+                        id: "unrelenting_standards",
+                        title: "完璧主義「べき」スキーマ",
+                        description: "物事は完璧にこなさなければならない、休まず達成しなければならないと自分を追い詰めやすい心のパターンです。自分にも他人にも高い基準を向けることがあります。"
+                    ),
+                    EarlyMaladaptiveSchemaItem(
+                        id: "punitiveness",
+                        title: "「できなければ罰されるべき」スキーマ",
+                        description: "うまくできなかった人は罰されるべきだと感じ、自分や他人を許しにくくなる心のパターンです。失敗した自分を強く責めやすくなります。"
+                    )
+                ]
+            ),
+            EarlyMaladaptiveSchemaCategory(
+                title: "第5領域: 自分勝手になりすぎること",
+                description: "「自律性のある人間になりたい」「ある程度自分をコントロールできるようになりたい」という中核的感情欲求が満たされなかった時に生まれやすい領域です。",
+                schemas: [
+                    EarlyMaladaptiveSchemaItem(
+                        id: "entitlement",
+                        title: "「オレ様・女王様」スキーマ",
+                        description: "自分は他人と違う特別な存在で、特別扱いされるべきだと感じやすい心のパターンです。自分のやりたいようにするために、相手を利用してもよいと感じることがあります。"
+                    ),
+                    EarlyMaladaptiveSchemaItem(
+                        id: "insufficient_self_control",
+                        title: "「自分をコントロールできない」スキーマ",
+                        description: "楽しいことや欲しいものを今すぐ求め、我慢や計画を後回しにしやすい心のパターンです。やるべきことより、やりたいことを優先しやすくなります。"
+                    )
                 ]
             )
         ]
+    }
+
+    /// 選択済みのスキーマをカテゴリ順で返す。
+    var selectedSchemaItems: [EarlyMaladaptiveSchemaItem] {
+        earlyMaladaptiveSchemaCategories
+            .flatMap(\.schemas)
+            .filter { selectedSchemaIds.contains($0.id) }
     }
 
     /// 身体反応欄のプレースホルダーを表示するか判定する。
@@ -264,9 +327,9 @@ final class IntrospectionViewModel: ObservableObject {
         selectedPeriod = memoryEntry.period
         personDraftText = ""
         people = memoryEntry.people
+        selectedSchemaIds = memoryEntry.schemaIds
         factText = memoryEntry.factText
         emotionText = memoryEntry.emotionText
-        feelingText = memoryEntry.feelingText
         bodyReactionText = memoryEntry.bodyReactionText
         thoughtText = memoryEntry.thoughtText
         desiredResponseText = memoryEntry.desiredResponseText
@@ -328,25 +391,49 @@ final class IntrospectionViewModel: ObservableObject {
         emotionText = ""
     }
 
-    /// 指定した気持ちを選択または解除する。
-    func toggleFeeling(_ feeling: String) {
-        var feelings = selectedFeelings
-        if let index = feelings.firstIndex(of: feeling) {
-            feelings.remove(at: index)
+    /// 指定したスキーマを選択または解除する。
+    func toggleSchema(_ schema: EarlyMaladaptiveSchemaItem) {
+        if let index = selectedSchemaIds.firstIndex(of: schema.id) {
+            selectedSchemaIds.remove(at: index)
         } else {
-            feelings.append(feeling)
+            selectedSchemaIds.append(schema.id)
         }
-        feelingText = feelings.joined(separator: "、")
     }
 
-    /// 指定した気持ちが選択済みか判定する。
-    func isFeelingSelected(_ feeling: String) -> Bool {
-        selectedFeelings.contains(feeling)
+    /// 指定したスキーマが選択済みか判定する。
+    func isSchemaSelected(_ schema: EarlyMaladaptiveSchemaItem) -> Bool {
+        selectedSchemaIds.contains(schema.id)
     }
 
-    /// 選択中の気持ちをすべて解除する。
-    func clearFeelings() {
-        feelingText = ""
+    /// 選択中のスキーマをすべて解除する。
+    func clearSchemas() {
+        selectedSchemaIds = []
+    }
+
+    /// 不適応スキーマの説明アラートを表示する。
+    func showSchemaInfoAlert() {
+        alert = AlertContext(
+            title: "スキーマとは？",
+            message: "幼少期の経験などから作られた、自分、他人、世界に対する深い信念、価値観、イメージです。出来事に対して湧いてくる思考には、このスキーマが影響しています。\n\n例えば、メッセージがなかなか返ってこないという出来事があったとします。その出来事を「自分は見捨てられる人間なんだ」というスキーマを持つAさんと「自分は愛される人間なんだ」というスキーマを持つBさんの両方が経験したとします。この場合、Aさんはその出来事に対して「自分は嫌われたのかもしれない」と考え、Bさんは「相手は今忙しいんだな」と考えるかもしれません。このようにスキーマは、自分の思考に大きく影響を及ぼします。\n\nスキーマ療法では18種類の代表的な生きづらさにつながるスキーマが提唱されています。それらのスキーマは、早期不適応スキーマと呼ばれています。",
+            actions: [
+                AlertContext.Action(title: "OK", role: nil) { [weak self] _ in
+                    self?.alert = nil
+                }
+            ]
+        )
+    }
+
+    /// スキーマ選択完了後の注意アラートを表示する。
+    func showSchemaSelectionCompletedAlert() {
+        alert = AlertContext(
+            title: "選んだスキーマについて",
+            message: "選んだスキーマは「あなた自身」を表すものではありません。\n今回の出来事で反応した可能性がある心のパターンです。",
+            actions: [
+                AlertContext.Action(title: "OK", role: nil) { [weak self] _ in
+                    self?.alert = nil
+                }
+            ]
+        )
     }
 
     /// 遷移元に合わせて戻るボタンの表示を切り替える。
@@ -377,9 +464,9 @@ final class IntrospectionViewModel: ObservableObject {
                 period: selectedPeriod,
                 people: normalizedPeople(),
                 introspectionStatus: status,
+                schemaIds: selectedSchemaIds,
                 factText: factText,
                 emotionText: emotionText,
-                feelingText: feelingText,
                 bodyReactionText: bodyReactionText,
                 thoughtText: thoughtText,
                 desiredResponseText: desiredResponseText,
