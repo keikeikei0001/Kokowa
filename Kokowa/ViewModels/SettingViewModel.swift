@@ -65,14 +65,14 @@ final class SettingViewModel: ObservableObject {
     func handleDeleteAccountTap() {
         alert = AlertContext(
             title: "アカウントを削除しますか？",
-            message: "ユーザーID、キャラクター、記入記録、記憶記録をこの端末から削除します。この操作は取り消せません。",
+            message: "この端末に保存されているユーザーID、キャラクター、記入記録、記憶記録をすべて削除します。この操作は取り消せません。",
             actions: [
                 AlertContext.Action(title: "キャンセル", role: .cancel) { [weak self] _ in
                     self?.alert = nil
                 },
                 AlertContext.Action(title: "削除", role: .destructive) { [weak self] _ in
-                    self?.deleteAccount()
                     self?.alert = nil
+                    self?.deleteAccount()
                 }
             ]
         )
@@ -86,19 +86,29 @@ final class SettingViewModel: ObservableObject {
 
     /// ローカル保存データと認証情報を削除する。
     private func deleteAccount() {
-        guard let userId = authManager?.userId else {
-            authManager?.DeleteAccount()
-            refreshAuthState()
-            return
-        }
-
         do {
-            try accountRepository?.deleteAccountData(userId: userId)
+            guard let accountRepository else {
+                throw AccountDeletionError.repositoryUnavailable
+            }
+            try accountRepository.deleteAllLocalData()
             authManager?.DeleteAccount()
             refreshAuthState()
         } catch {
-            return
+            showDeleteAccountFailedAlert()
         }
+    }
+
+    /// アカウント削除に失敗した場合のアラートを表示する。
+    private func showDeleteAccountFailedAlert() {
+        alert = AlertContext(
+            title: "削除できませんでした",
+            message: "保存データを削除できませんでした。時間をおいてもう一度試してください。",
+            actions: [
+                AlertContext.Action(title: "OK", role: nil) { [weak self] _ in
+                    self?.alert = nil
+                }
+            ]
+        )
     }
 
     /// 表示用の認証状態を更新する。
@@ -106,4 +116,8 @@ final class SettingViewModel: ObservableObject {
         userIdText = authManager?.userId ?? "未作成"
         isSignedIn = authManager?.isSignedIn ?? false
     }
+}
+
+private enum AccountDeletionError: Error {
+    case repositoryUnavailable
 }

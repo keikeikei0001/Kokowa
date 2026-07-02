@@ -55,7 +55,7 @@ class AuthManager: ObservableObject {
 
     /// ログイン状態と保存済みユーザーIDを削除する。
     func DeleteAccount() {
-        UserDefaults.standard.set(false, forKey: UserDefaultsKey.isSignedIn)
+        UserDefaults.standard.removeObject(forKey: UserDefaultsKey.isSignedIn)
         self.isSignedIn = false
         self.userId = nil
         keychainRepository.deleteFromKeychain()

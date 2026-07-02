@@ -9,8 +9,8 @@ import Foundation
 import SwiftData
 
 protocol AccountRepository {
-    /// 指定したユーザーIDに紐づくローカル保存データを削除する。
-    func deleteAccountData(userId: String) throws
+    /// この端末に保存されているアプリ内データをすべて削除する。
+    func deleteAllLocalData() throws
 }
 
 final class LocalAccountRepository: AccountRepository {
@@ -21,59 +21,39 @@ final class LocalAccountRepository: AccountRepository {
         self.modelContext = modelContext
     }
 
-    /// 指定したユーザーIDに紐づくローカル保存データを削除する。
-    func deleteAccountData(userId: String) throws {
-        try deleteUserProfiles(userId: userId)
-        try deleteOwnedCharacters(userId: userId)
-        try deleteMentalEntries(userId: userId)
-        try deleteMemoryEntries(userId: userId)
+    /// この端末に保存されているアプリ内データをすべて削除する。
+    func deleteAllLocalData() throws {
+        try deleteAllUserProfiles()
+        try deleteAllOwnedCharacters()
+        try deleteAllMentalEntries()
+        try deleteAllMemoryEntries()
         try modelContext.save()
     }
 
-    /// 指定したユーザーIDのユーザー情報を削除する。
-    private func deleteUserProfiles(userId: String) throws {
-        let descriptor = FetchDescriptor<UserProfile>(
-            predicate: #Predicate { profile in
-                profile.userId == userId
-            }
-        )
-        try modelContext.fetch(descriptor).forEach { profile in
+    /// すべてのユーザー情報を削除する。
+    private func deleteAllUserProfiles() throws {
+        try modelContext.fetch(FetchDescriptor<UserProfile>()).forEach { profile in
             modelContext.delete(profile)
         }
     }
 
-    /// 指定したユーザーIDの所有キャラクターを削除する。
-    private func deleteOwnedCharacters(userId: String) throws {
-        let descriptor = FetchDescriptor<OwnedCharacter>(
-            predicate: #Predicate { character in
-                character.userId == userId
-            }
-        )
-        try modelContext.fetch(descriptor).forEach { character in
+    /// すべての所有キャラクターを削除する。
+    private func deleteAllOwnedCharacters() throws {
+        try modelContext.fetch(FetchDescriptor<OwnedCharacter>()).forEach { character in
             modelContext.delete(character)
         }
     }
 
-    /// 指定したユーザーIDのメンタル記録を削除する。
-    private func deleteMentalEntries(userId: String) throws {
-        let descriptor = FetchDescriptor<MentalEntry>(
-            predicate: #Predicate { entry in
-                entry.userId == userId
-            }
-        )
-        try modelContext.fetch(descriptor).forEach { entry in
+    /// すべてのメンタル記録を削除する。
+    private func deleteAllMentalEntries() throws {
+        try modelContext.fetch(FetchDescriptor<MentalEntry>()).forEach { entry in
             modelContext.delete(entry)
         }
     }
 
-    /// 指定したユーザーIDの記憶記録を削除する。
-    private func deleteMemoryEntries(userId: String) throws {
-        let descriptor = FetchDescriptor<MemoryEntry>(
-            predicate: #Predicate { entry in
-                entry.userId == userId
-            }
-        )
-        try modelContext.fetch(descriptor).forEach { entry in
+    /// すべての記憶記録を削除する。
+    private func deleteAllMemoryEntries() throws {
+        try modelContext.fetch(FetchDescriptor<MemoryEntry>()).forEach { entry in
             modelContext.delete(entry)
         }
     }

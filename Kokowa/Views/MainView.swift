@@ -23,7 +23,6 @@ struct MainView: View {
             .alert($viewModel.alert)
             .onAppear {
                 viewModel.configure(modelContext: modelContext, userId: authManager.userId)
-                SampleDataSeeder.seedIfNeeded(modelContext: modelContext, userId: authManager.userId)
             }
         }
     }
