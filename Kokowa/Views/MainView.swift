@@ -45,7 +45,7 @@ struct MainView: View {
                 VStack(spacing: 0) {
                     Spacer()
                     messageView()
-                    characterImageView(sceneHeight: proxy.size.height)
+                    characterImageView()
                         .padding(.bottom, 35)
                 }
             }
@@ -168,19 +168,22 @@ struct MainView: View {
 
     /// キャラクター画像と影を表示する。
     @ViewBuilder
-    private func characterImageView(sceneHeight: CGFloat) -> some View {
+    private func characterImageView() -> some View {
         ZStack {
             Ellipse()
                 .fill(Color.black.opacity(0.20))
-                .frame(width: 180 * viewModel.motion.shadowScale, height: 34 * viewModel.motion.shadowScale)
-                .offset(y: viewModel.characterShadowOffsetY(sceneHeight: sceneHeight))
+                .frame(
+                    width: viewModel.characterShadowWidth * viewModel.motion.shadowScale,
+                    height: viewModel.characterShadowHeight * viewModel.motion.shadowScale
+                )
+                .offset(y: viewModel.characterShadowOffsetY)
 
             Image(viewModel.characterImageName)
                 .resizable()
                 .scaledToFit()
                 .frame(width: viewModel.characterImageSize)
                 .shadow(color: .black.opacity(0.18), radius: 12, x: 0, y: 10)
-                .offset(y: viewModel.motion.jumpOffset)
+                .offset(y: viewModel.characterFootOffsetY + viewModel.motion.jumpOffset)
                 .rotationEffect(.degrees(viewModel.motion.rotationAngle))
                 .onTapGesture(perform: viewModel.handleCharacterImageTap)
         }

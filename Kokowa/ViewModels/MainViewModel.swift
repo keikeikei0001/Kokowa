@@ -52,19 +52,32 @@ class MainViewModel: ObservableObject {
 
     /// キャラクター画像名を返す。
     var characterImageName: String {
-        guard let activeCharacter else {
-            return "uruhuneko0001"
-        }
-
-        return CharacterMasterStore.character(id: activeCharacter.characterId)?.imageName ?? activeCharacter.characterId
+        characterMaster.imageName
     }
 
     /// キャラクター画像の表示幅を返す。
     var characterImageSize: CGFloat {
-        if characterImageName == "usaneko0001" {
-            return DeviceModel.width / 1.93
-        }
-        return DeviceModel.width / 1.8
+        DeviceModel.width / characterMaster.homeImageWidthRatio
+    }
+
+    /// キャラクター画像の縦位置調整量を返す。
+    var characterFootOffsetY: CGFloat {
+        characterMaster.homeFootOffsetY
+    }
+
+    /// キャラクター影の表示幅を返す。
+    var characterShadowWidth: CGFloat {
+        characterMaster.homeShadowWidth
+    }
+
+    /// キャラクター影の表示高さを返す。
+    var characterShadowHeight: CGFloat {
+        characterMaster.homeShadowHeight
+    }
+
+    /// キャラクター影の縦位置を返す。
+    var characterShadowOffsetY: CGFloat {
+        characterMaster.homeShadowOffsetY
     }
 
     /// キャラクターのメッセージを表示する透明度を返す。
@@ -91,11 +104,6 @@ class MainViewModel: ObservableObject {
         } else {
             occurCharacterJumpEffect()
         }
-    }
-
-    /// キャラクターの影の縦位置を返す。
-    func characterShadowOffsetY(sceneHeight: CGFloat) -> CGFloat {
-        min(sceneHeight * 0.19, 96)
     }
 
     /// 初期表示用のキャラクター情報を読み込む。
@@ -174,5 +182,13 @@ class MainViewModel: ObservableObject {
                 self.motion.showMessage = false
             }
         }
+    }
+
+    private var characterMaster: CharacterMaster {
+        guard let activeCharacter else {
+            return CharacterMasterStore.character(id: "uruhuneko0001") ?? CharacterMasterStore.characters[0]
+        }
+
+        return CharacterMasterStore.character(id: activeCharacter.characterId) ?? CharacterMasterStore.characters[0]
     }
 }
