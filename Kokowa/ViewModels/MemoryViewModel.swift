@@ -20,6 +20,7 @@ final class MemoryViewModel: ObservableObject {
     @Published var personSearchText = ""
     @Published var selectedIntrospectionStatusFilter: MemoryIntrospectionStatus?
     @Published var isKeyboardVisible = false
+    @Published var alert: AlertContext?
 
     private let dateHelper = DateHelper()
     private var userId: String?
@@ -145,6 +146,25 @@ final class MemoryViewModel: ObservableObject {
         } catch {
             return
         }
+    }
+
+    /// 記憶記録を追加する前の確認アラートを表示する。
+    func showAddEntryConfirmation() {
+        guard isAddButtonDisabled == false else { return }
+
+        alert = AlertContext(
+            title: "出来事を追加しますか？",
+            message: "入力した内容を記憶として保存します。保存後の内観ステータスは未内観になります。",
+            actions: [
+                AlertContext.Action(title: "キャンセル", role: .cancel) { [weak self] _ in
+                    self?.alert = nil
+                },
+                AlertContext.Action(title: "追加", role: nil) { [weak self] _ in
+                    self?.addEntry()
+                    self?.alert = nil
+                }
+            ]
+        )
     }
 
     /// 内観ステータスフィルターを切り替える。

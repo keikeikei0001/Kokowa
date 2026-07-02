@@ -39,12 +39,11 @@ final class IntrospectionViewModel: ObservableObject {
     @Published var emotionReleaseText = ""
     @Published var selectedSchemaIds: [String] = []
     @Published var factText = ""
+    @Published var actionText = ""
     @Published var emotionText = ""
     @Published var bodyReactionText = ""
     @Published var thoughtText = ""
-    @Published var desiredResponseText = ""
-    @Published var fearText = ""
-    @Published var desiredActionText = ""
+    @Published var futureActionText = ""
     @Published var insightText = ""
     @Published var isKeyboardVisible = false
     @Published var returnButtonTitle = "ホームに戻る"
@@ -86,6 +85,11 @@ final class IntrospectionViewModel: ObservableObject {
     /// 事実欄のプレースホルダーを表示するか判定する。
     var shouldShowFactPlaceholder: Bool {
         factText.isEmpty
+    }
+
+    /// 行動欄のプレースホルダーを表示するか判定する。
+    var shouldShowActionPlaceholder: Bool {
+        actionText.isEmpty
     }
 
     /// 選択済みの感情を配列で返す。
@@ -285,19 +289,9 @@ final class IntrospectionViewModel: ObservableObject {
         thoughtText.isEmpty
     }
 
-    /// どうして欲しかったのか欄のプレースホルダーを表示するか判定する。
-    var shouldShowDesiredResponsePlaceholder: Bool {
-        desiredResponseText.isEmpty
-    }
-
-    /// 何を恐れていたのか欄のプレースホルダーを表示するか判定する。
-    var shouldShowFearPlaceholder: Bool {
-        fearText.isEmpty
-    }
-
-    /// どうしたかったのか欄のプレースホルダーを表示するか判定する。
-    var shouldShowDesiredActionPlaceholder: Bool {
-        desiredActionText.isEmpty
+    /// これからどうしたいのか欄のプレースホルダーを表示するか判定する。
+    var shouldShowFutureActionPlaceholder: Bool {
+        futureActionText.isEmpty
     }
 
     /// 出来事による気づき欄のプレースホルダーを表示するか判定する。
@@ -329,12 +323,11 @@ final class IntrospectionViewModel: ObservableObject {
         people = memoryEntry.people
         selectedSchemaIds = memoryEntry.schemaIds
         factText = memoryEntry.factText
+        actionText = memoryEntry.actionText
         emotionText = memoryEntry.emotionText
         bodyReactionText = memoryEntry.bodyReactionText
         thoughtText = memoryEntry.thoughtText
-        desiredResponseText = memoryEntry.desiredResponseText
-        fearText = memoryEntry.fearText
-        desiredActionText = memoryEntry.desiredActionText
+        futureActionText = memoryEntry.futureActionText
         insightText = memoryEntry.insightText
         hasConfiguredMemoryEntry = true
     }
@@ -347,6 +340,60 @@ final class IntrospectionViewModel: ObservableObject {
     /// 内観を保存し、内観ステータスを内観済にする。
     func completeIntrospection() {
         saveIntrospection(status: .completed)
+    }
+
+    /// 内観完了の確認アラートを表示する。
+    func showCompleteConfirmation() {
+        alert = AlertContext(
+            title: "内観を完了しますか？",
+            message: "入力内容を保存し、内観ステータスを内観済にします。",
+            actions: [
+                AlertContext.Action(title: "キャンセル", role: .cancel) { [weak self] _ in
+                    self?.alert = nil
+                },
+                AlertContext.Action(title: "完了する", role: nil) { [weak self] _ in
+                    self?.completeIntrospection()
+                    self?.alert = nil
+                }
+            ]
+        )
+    }
+
+    /// 出来事カードの入力内容を画面上だけリセットする。
+    func resetEventCard() {
+        titleText = ""
+        selectedPeriod = .elementary
+        personDraftText = ""
+        people = []
+    }
+
+    /// 出来事を分解するカードの入力内容を画面上だけリセットする。
+    func resetDecompositionCard() {
+        factText = ""
+        actionText = ""
+        bodyReactionText = ""
+        emotionText = ""
+        thoughtText = ""
+    }
+
+    /// 感情を吐き出すカードの入力内容を画面上だけリセットする。
+    func resetEmotionReleaseCard() {
+        emotionReleaseText = ""
+    }
+
+    /// スキーマカードの選択内容を画面上だけリセットする。
+    func resetSchemaCard() {
+        selectedSchemaIds = []
+    }
+
+    /// 心の声カードの入力内容を画面上だけリセットする。
+    func resetInnerVoiceCard() {
+        futureActionText = ""
+    }
+
+    /// 気づきカードの入力内容を画面上だけリセットする。
+    func resetInsightCard() {
+        insightText = ""
     }
 
     /// 相手入力欄の内容を相手リストへ追加する。
@@ -410,6 +457,42 @@ final class IntrospectionViewModel: ObservableObject {
         selectedSchemaIds = []
     }
 
+    /// 出来事削除の確認アラートを表示する。
+    func showDeleteConfirmation(onDelete: @escaping () -> Void) {
+        alert = AlertContext(
+            title: "この出来事を削除しますか？",
+            message: "この出来事に保存されている情報をすべて削除します。この操作は取り消せません。",
+            actions: [
+                AlertContext.Action(title: "キャンセル", role: .cancel) { [weak self] _ in
+                    self?.alert = nil
+                },
+                AlertContext.Action(title: "削除", role: .destructive) { [weak self] _ in
+                    if self?.deleteCurrentEntry() == true {
+                        self?.alert = nil
+                        onDelete()
+                    }
+                }
+            ]
+        )
+    }
+
+    /// カード内の入力内容を画面上だけ消す確認アラートを表示する。
+    func showResetConfirmation(title: String, onReset: @escaping () -> Void) {
+        alert = AlertContext(
+            title: "入力内容をリセットしますか？",
+            message: "\(title)の内容を画面上だけ消します。保存済みデータは、保存ボタンを押すまで変更されません。",
+            actions: [
+                AlertContext.Action(title: "キャンセル", role: .cancel) { [weak self] _ in
+                    self?.alert = nil
+                },
+                AlertContext.Action(title: "リセット", role: .destructive) { [weak self] _ in
+                    onReset()
+                    self?.alert = nil
+                }
+            ]
+        )
+    }
+
     /// 不適応スキーマの説明アラートを表示する。
     func showSchemaInfoAlert() {
         alert = AlertContext(
@@ -447,6 +530,23 @@ final class IntrospectionViewModel: ObservableObject {
         }
     }
 
+    /// 現在の出来事を保存データから削除する。
+    private func deleteCurrentEntry() -> Bool {
+        guard let memoryEntry, let memoryEntryRepository else {
+            resetAllInput()
+            return true
+        }
+
+        do {
+            try memoryEntryRepository.deleteEntry(memoryEntry)
+            resetAllInput()
+            return true
+        } catch {
+            saveResultText = "削除できませんでした"
+            return false
+        }
+    }
+
     /// 感情吐き出し欄以外の内観内容を保存する。
     private func saveIntrospection(status: MemoryIntrospectionStatus) {
         guard
@@ -466,12 +566,11 @@ final class IntrospectionViewModel: ObservableObject {
                 introspectionStatus: status,
                 schemaIds: selectedSchemaIds,
                 factText: factText,
+                actionText: actionText,
                 emotionText: emotionText,
                 bodyReactionText: bodyReactionText,
                 thoughtText: thoughtText,
-                desiredResponseText: desiredResponseText,
-                fearText: fearText,
-                desiredActionText: desiredActionText,
+                futureActionText: futureActionText,
                 insightText: insightText
             )
             saveResultText = status == .completed ? "内観済として保存しました" : "内観中として保存しました"
@@ -491,5 +590,16 @@ final class IntrospectionViewModel: ObservableObject {
         (people + [personDraftText])
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { $0.isEmpty == false }
+    }
+
+    /// 画面上のすべての入力内容を空にする。
+    private func resetAllInput() {
+        resetEventCard()
+        resetDecompositionCard()
+        resetEmotionReleaseCard()
+        resetSchemaCard()
+        resetInnerVoiceCard()
+        resetInsightCard()
+        saveResultText = ""
     }
 }

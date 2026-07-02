@@ -180,7 +180,7 @@ struct RecordView: View {
                     .font(.headline.weight(.bold))
             }
         }
-        .foregroundStyle(.kokowaTeal)
+        .foregroundStyle(.kokowaTerracotta)
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .background(Color.white.opacity(0.58), in: Capsule())
@@ -231,7 +231,7 @@ struct RecordView: View {
                 .frame(height: 46)
                 .background(
                     viewModel.isSelectedDate(date)
-                    ? Color.kokowaTeal
+                    ? Color.kokowaTerracotta
                     : calendarDayBackgroundColor(hasEntry: day.entry != nil),
                     in: RoundedRectangle(cornerRadius: 13, style: .continuous)
                 )
@@ -376,7 +376,7 @@ struct RecordView: View {
     
     /// 日付セルの背景色を返す。
     private func calendarDayBackgroundColor(hasEntry: Bool) -> Color {
-        hasEntry ? .kokowaMint.opacity(0.72) : Color.white.opacity(0.46)
+        hasEntry ? .kokowaTerracotta.opacity(0.22) : Color.white.opacity(0.46)
     }
     
     /// ホーム画面へ戻るためのボタンを表示する。

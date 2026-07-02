@@ -52,6 +52,7 @@ struct MemoryView: View {
         .sheet(isPresented: $isFilterPeriodPickerPresented) {
             filterPeriodPickerSheetView()
         }
+        .alert($viewModel.alert)
     }
 
     /// 日付・画面タイトル・補足文を表示するヘッダー。
@@ -246,7 +247,7 @@ struct MemoryView: View {
     @ViewBuilder
     private func addEntryButtonView() -> some View {
         Button {
-            viewModel.addEntry()
+            viewModel.showAddEntryConfirmation()
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: "plus.circle.fill")

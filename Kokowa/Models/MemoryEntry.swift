@@ -18,12 +18,11 @@ final class MemoryEntry {
     var peopleData: Data
     var schemaIdsData: Data = Data()
     var factText: String = ""
+    var actionText: String = ""
     var emotionText: String = ""
     var bodyReactionText: String = ""
     var thoughtText: String = ""
-    var desiredResponseText: String = ""
-    var fearText: String = ""
-    var desiredActionText: String = ""
+    var futureActionText: String = ""
     var insightText: String = ""
     var createdAt: Date
     var updatedAt: Date
@@ -38,12 +37,11 @@ final class MemoryEntry {
         people: [String],
         schemaIds: [String] = [],
         factText: String = "",
+        actionText: String = "",
         emotionText: String = "",
         bodyReactionText: String = "",
         thoughtText: String = "",
-        desiredResponseText: String = "",
-        fearText: String = "",
-        desiredActionText: String = "",
+        futureActionText: String = "",
         insightText: String = "",
         createdAt: Date = Date(),
         updatedAt: Date = Date()
@@ -56,12 +54,11 @@ final class MemoryEntry {
         self.peopleData = Self.encodeStringArray(people)
         self.schemaIdsData = Self.encodeStringArray(schemaIds)
         self.factText = factText
+        self.actionText = actionText
         self.emotionText = emotionText
         self.bodyReactionText = bodyReactionText
         self.thoughtText = thoughtText
-        self.desiredResponseText = desiredResponseText
-        self.fearText = fearText
-        self.desiredActionText = desiredActionText
+        self.futureActionText = futureActionText
         self.insightText = insightText
         self.createdAt = createdAt
         self.updatedAt = updatedAt

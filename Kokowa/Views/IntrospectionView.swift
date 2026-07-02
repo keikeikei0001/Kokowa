@@ -38,6 +38,7 @@ struct IntrospectionView: View {
                     schemaAwarenessCardView()
                     insightView()
                     emotionFeelingSessionView()
+                    emotionLoopRecommendationView()
                     InnerVoiceView()
                     saveActionButtonsView()
                 }
@@ -103,6 +104,10 @@ struct IntrospectionView: View {
                             .allowsHitTesting(false)
                     }
                 }
+
+            resetCardButtonView(title: "感情を吐き出すをリセット") {
+                viewModel.resetEmotionReleaseCard()
+            }
         }
         .padding(18)
         .kokowaCard(cornerRadius: 22)
@@ -162,6 +167,10 @@ struct IntrospectionView: View {
                 .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
             .buttonStyle(.plain)
+
+            resetCardButtonView(title: "スキーマをリセット") {
+                viewModel.resetSchemaCard()
+            }
         }
         .padding(18)
         .kokowaCard(cornerRadius: 22)
@@ -171,9 +180,15 @@ struct IntrospectionView: View {
     @ViewBuilder
     private func headerView() -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(viewModel.todayText)
-                .font(.headline.weight(.bold))
-                .foregroundStyle(.secondaryTextGray)
+            HStack(alignment: .top) {
+                Text(viewModel.todayText)
+                    .font(.headline.weight(.bold))
+                    .foregroundStyle(.secondaryTextGray)
+
+                Spacer()
+
+                deleteButtonView()
+            }
 
             Text("内観")
                 .font(.system(size: 42, weight: .bold, design: .rounded))
@@ -200,6 +215,10 @@ struct IntrospectionView: View {
             titleFieldView()
             periodPickerView()
             peopleInputView()
+
+            resetCardButtonView(title: "出来事をリセット") {
+                viewModel.resetEventCard()
+            }
         }
         .padding(18)
         .kokowaCard(cornerRadius: 22)
@@ -225,7 +244,17 @@ struct IntrospectionView: View {
                 shouldShowPlaceholder: viewModel.shouldShowFactPlaceholder,
                 textMinHeight: 92
             )
-            
+
+            introspectionTextAreaView(
+                icon: "figure.walk.motion",
+                title: "行動",
+                placeholder: "起きた事実に対して、自分が行ったことだけを書く",
+                color: .kokowaTeal,
+                text: $viewModel.actionText,
+                shouldShowPlaceholder: viewModel.shouldShowActionPlaceholder,
+                textMinHeight: 72
+            )
+
             introspectionTextAreaView(
                 icon: "figure.mind.and.body",
                 title: "身体反応",
@@ -247,6 +276,10 @@ struct IntrospectionView: View {
                 shouldShowPlaceholder: viewModel.shouldShowThoughtPlaceholder,
                 textMinHeight: 92
             )
+
+            resetCardButtonView(title: "分解した内容をリセット") {
+                viewModel.resetDecompositionCard()
+            }
         }
         .padding(18)
         .kokowaCard(cornerRadius: 22)
@@ -294,6 +327,26 @@ struct IntrospectionView: View {
         .buttonStyle(.plain)
     }
 
+    /// 感情を吐き出す工程へ戻ることを促す補足文を表示する。
+    @ViewBuilder
+    private func emotionLoopRecommendationView() -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "arrow.counterclockwise.circle.fill")
+                .font(.headline.weight(.bold))
+                .foregroundStyle(.kokowaTerracotta)
+                .padding(.top, 1)
+
+            Text("ここまで終わったら、感情を吐き出すに戻って何回かここまで繰り返すことをおすすめします。")
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(.secondaryTextGray)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
     /// 自分の心の声に耳を傾けるための入力カードを表示する。
     @ViewBuilder
     private func InnerVoiceView() -> some View {
@@ -305,34 +358,18 @@ struct IntrospectionView: View {
             )
 
             introspectionTextAreaView(
-                icon: "hand.raised.fill",
-                title: "どうして欲しかったのか？",
-                placeholder: "相手や周りにして欲しかったことを書く",
+                icon: "sparkles",
+                title: "これからどうしたいのか？",
+                placeholder: "この出来事をふまえて、これから自分がどうしたいのかを書く",
                 color: .kokowaTerracotta,
-                text: $viewModel.desiredResponseText,
-                shouldShowPlaceholder: viewModel.shouldShowDesiredResponsePlaceholder,
+                text: $viewModel.futureActionText,
+                shouldShowPlaceholder: viewModel.shouldShowFutureActionPlaceholder,
                 textMinHeight: 92
             )
 
-            introspectionTextAreaView(
-                icon: "shield.lefthalf.filled",
-                title: "どのような恐れがあったのか？",
-                placeholder: "恐れがある場合は、自分が何を恐れていたのかを書く",
-                color: .kokowaPeriwinkle,
-                text: $viewModel.fearText,
-                shouldShowPlaceholder: viewModel.shouldShowFearPlaceholder,
-                textMinHeight: 92
-            )
-
-            introspectionTextAreaView(
-                icon: "figure.walk.motion",
-                title: "どうしたかったのか？",
-                placeholder: "本当は自分がどう動きたかったのかを書く",
-                color: .kokowaTeal,
-                text: $viewModel.desiredActionText,
-                shouldShowPlaceholder: viewModel.shouldShowDesiredActionPlaceholder,
-                textMinHeight: 92
-            )
+            resetCardButtonView(title: "心の声をリセット") {
+                viewModel.resetInnerVoiceCard()
+            }
         }
         .padding(18)
         .kokowaCard(cornerRadius: 22)
@@ -365,6 +402,10 @@ struct IntrospectionView: View {
                             .allowsHitTesting(false)
                     }
                 }
+
+            resetCardButtonView(title: "気づきをリセット") {
+                viewModel.resetInsightCard()
+            }
         }
         .padding(18)
         .kokowaCard(cornerRadius: 22)
@@ -395,7 +436,7 @@ struct IntrospectionView: View {
             .opacity(viewModel.isIntrospectionSaveDisabled ? 0.45 : 1)
 
             Button {
-                viewModel.completeIntrospection()
+                viewModel.showCompleteConfirmation()
             } label: {
                 HStack(spacing: 8) {
                     Image(systemName: "checkmark.circle.fill")
@@ -422,6 +463,46 @@ struct IntrospectionView: View {
                     .foregroundStyle(.secondaryTextGray)
             }
         }
+    }
+
+    /// この出来事を削除するボタンを表示する。
+    @ViewBuilder
+    private func deleteButtonView() -> some View {
+        Button {
+            viewModel.showDeleteConfirmation {
+                dismiss()
+            }
+        } label: {
+            Image(systemName: "trash.fill")
+                .font(.headline.weight(.bold))
+                .foregroundStyle(.kokowaRose)
+                .frame(width: 42, height: 42)
+                .background(Color.white.opacity(0.72), in: Circle())
+                .shadow(color: .kokowaRose.opacity(0.12), radius: 10, x: 0, y: 6)
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// カード内の入力内容を画面上だけ消すリセットボタンを表示する。
+    @ViewBuilder
+    private func resetCardButtonView(title: String, action: @escaping () -> Void) -> some View {
+        Button {
+            viewModel.showResetConfirmation(title: title, onReset: action)
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "arrow.counterclockwise")
+                    .font(.caption.weight(.bold))
+
+                Text(title)
+                    .font(.caption.weight(.bold))
+            }
+            .foregroundStyle(.secondaryTextGray)
+            .padding(.horizontal, 11)
+            .padding(.vertical, 7)
+            .background(Color.white.opacity(0.5), in: Capsule())
+        }
+        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity, alignment: .trailing)
     }
 
     /// 感情を選ぶ入力欄を表示する。

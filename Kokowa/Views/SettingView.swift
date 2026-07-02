@@ -37,6 +37,7 @@ struct SettingView: View {
             viewModel.setAuthManager(authManager: authManager)
             viewModel.setModelContext(modelContext)
         }
+        .alert($viewModel.alert)
     }
 
     /// 画面タイトルと補足文を表示するヘッダー。

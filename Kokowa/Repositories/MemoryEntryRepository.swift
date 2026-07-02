@@ -31,12 +31,11 @@ protocol MemoryEntryRepository {
         introspectionStatus: MemoryIntrospectionStatus,
         schemaIds: [String],
         factText: String,
+        actionText: String,
         emotionText: String,
         bodyReactionText: String,
         thoughtText: String,
-        desiredResponseText: String,
-        fearText: String,
-        desiredActionText: String,
+        futureActionText: String,
         insightText: String
     ) throws -> MemoryEntry
 
@@ -92,12 +91,11 @@ final class LocalMemoryEntryRepository: MemoryEntryRepository {
         introspectionStatus: MemoryIntrospectionStatus,
         schemaIds: [String],
         factText: String,
+        actionText: String,
         emotionText: String,
         bodyReactionText: String,
         thoughtText: String,
-        desiredResponseText: String,
-        fearText: String,
-        desiredActionText: String,
+        futureActionText: String,
         insightText: String
     ) throws -> MemoryEntry {
         let savedEntry = entry ?? MemoryEntry(
@@ -115,12 +113,11 @@ final class LocalMemoryEntryRepository: MemoryEntryRepository {
         savedEntry.schemaIds = schemaIds
         savedEntry.introspectionStatusRawValue = introspectionStatus.rawValue
         savedEntry.factText = factText
+        savedEntry.actionText = actionText
         savedEntry.emotionText = emotionText
         savedEntry.bodyReactionText = bodyReactionText
         savedEntry.thoughtText = thoughtText
-        savedEntry.desiredResponseText = desiredResponseText
-        savedEntry.fearText = fearText
-        savedEntry.desiredActionText = desiredActionText
+        savedEntry.futureActionText = futureActionText
         savedEntry.insightText = insightText
         savedEntry.updatedAt = Date()
 
