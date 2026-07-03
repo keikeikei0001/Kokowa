@@ -18,6 +18,8 @@ class MainViewModel: ObservableObject {
     private var userId: String?
     private var characterRepository: CharacterRepository?
     private var userProfileRepository: UserProfileRepository?
+    private let baseCharacterLayoutWidth: CGFloat = 390
+    private let baseShadowHeight: CGFloat = 30
 
     /// キャラクター名の表示用テキストを返す。
     var characterNameText: String {
@@ -55,34 +57,50 @@ class MainViewModel: ObservableObject {
         characterMaster.imageName
     }
 
-    /// キャラクター画像の表示幅を返す。
-    var characterImageSize: CGFloat {
-        DeviceModel.width / characterMaster.homeImageWidthRatio
-    }
-
-    /// キャラクター画像の縦位置調整量を返す。
-    var characterFootOffsetY: CGFloat {
-        characterMaster.homeFootOffsetY
-    }
-
-    /// キャラクター影の表示幅を返す。
-    var characterShadowWidth: CGFloat {
-        characterMaster.homeShadowWidth
-    }
-
-    /// キャラクター影の表示高さを返す。
-    var characterShadowHeight: CGFloat {
-        characterMaster.homeShadowHeight
-    }
-
-    /// キャラクター影の縦位置を返す。
-    var characterShadowOffsetY: CGFloat {
-        characterMaster.homeShadowOffsetY
-    }
-
     /// キャラクターのメッセージを表示する透明度を返す。
     var characterMessageOpacity: Double {
         motion.showMessage ? 1 : 0
+    }
+
+    /// 表示領域に応じたキャラクターステージの高さを返す。
+    func characterStageHeight(in screenSize: CGSize) -> CGFloat {
+        min(max(screenSize.height * 0.42, 240), 420)
+    }
+
+    /// 表示領域に応じたキャラクター画像の幅を返す。
+    func characterImageWidth(in screenSize: CGSize) -> CGFloat {
+        screenSize.width / characterMaster.homeImageWidthRatio
+    }
+
+    /// キャラクター画像の表示倍率を返す。
+    func characterLayoutScale(in screenSize: CGSize) -> CGFloat {
+        let baseImageWidth = baseCharacterLayoutWidth / characterMaster.homeImageWidthRatio
+        return characterImageWidth(in: screenSize) / baseImageWidth
+    }
+
+    /// 表示領域に応じたキャラクター画像の横位置調整量を返す。
+    func characterFootOffsetX(in screenSize: CGSize) -> CGFloat {
+        characterMaster.homeFootOffsetX * characterLayoutScale(in: screenSize)
+    }
+
+    /// 表示領域に応じたキャラクター画像の縦位置調整量を返す。
+    func characterFootOffsetY(in screenSize: CGSize) -> CGFloat {
+        (characterMaster.homeFootOffsetY * characterLayoutScale(in: screenSize)) + motion.jumpOffset
+    }
+
+    /// 表示領域に応じたキャラクター影の幅を返す。
+    func characterShadowWidth(in screenSize: CGSize) -> CGFloat {
+        characterMaster.homeShadowWidth * characterLayoutScale(in: screenSize) * motion.shadowScale
+    }
+
+    /// 表示領域に応じたキャラクター影の高さを返す。
+    func characterShadowHeight(in screenSize: CGSize) -> CGFloat {
+        baseShadowHeight * characterLayoutScale(in: screenSize) * motion.shadowScale
+    }
+
+    /// 表示領域に応じたキャラクター影の縦位置を返す。
+    func characterShadowOffsetY(in screenSize: CGSize) -> CGFloat {
+        (characterMaster.homeFootOffsetY + characterMaster.homeShadowFootGap) * characterLayoutScale(in: screenSize)
     }
 
     /// 表示に必要なリポジトリをセットする。

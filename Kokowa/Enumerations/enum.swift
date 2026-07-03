@@ -12,10 +12,10 @@ enum EntryCondition: String, CaseIterable, Identifiable {
     case good = "良い"
     case slightlyBad = "少し悪い"
     case bad = "悪い"
-    
+
     var id: String { rawValue }
     var title: String { rawValue }
-    
+
     var iconName: String {
         switch self {
         case .excellent:
@@ -35,10 +35,10 @@ enum StressLevel: String, CaseIterable, Identifiable {
     case high = "高い"
     case normal = "少し高い"
     case low = "普通以下"
-    
+
     var id: String { rawValue }
     var title: String { rawValue }
-    
+
     var iconName: String {
         switch self {
         case .veryHigh:
@@ -76,7 +76,7 @@ enum MemoryPeriod: String, CaseIterable, Identifiable {
     case late80s = "80代後半"
     case early90s = "90代前半"
     case late90s = "90代後半"
-    
+
     var id: String { rawValue }
     var title: String { rawValue }
 }
@@ -85,10 +85,10 @@ enum MemoryIntrospectionStatus: String, CaseIterable, Identifiable {
     case notStarted = "未内観"
     case inProgress = "内観中"
     case completed = "内観済"
-    
+
     var id: String { rawValue }
     var title: String { rawValue }
-    
+
     var color: UIColor {
         switch self {
         case .notStarted:
@@ -101,36 +101,67 @@ enum MemoryIntrospectionStatus: String, CaseIterable, Identifiable {
     }
 }
 
-enum CharacterExperienceTable {
+enum CharacterMasterStore {
     private static let initialLevelOverride = [1: 1]
 
-    private static let defaultRule = CharacterExperienceRule(
-        baseRequiredExperience: 3,
-        levelGrowth: 0.5,
-        levelOverrides: initialLevelOverride
-    )
-
-    static let rulesByCharacterId: [String: CharacterExperienceRule] = [
-        "kumaneko0001": CharacterExperienceRule(
-            baseRequiredExperience: 3, // レベル1から2に必要な経験値
-            levelGrowth: 0.5,          // レベルが上がるたびに増える量
-            levelOverrides: initialLevelOverride // 例: [5: 80] と書くとレベル5だけ80に固定
+    static let characters: [CharacterMaster] = [
+        CharacterMaster(
+            id: "kumaneko0001",
+            defaultName: "ねこ吉",
+            imageName: "kumaneko0001",
+            explanation: "ズボラな猫。リッスン姫に恋をするがズボラが原因で振られる。",
+            homeImageWidthRatio: 1.86,
+            homeFootOffsetX: 0,
+            homeFootOffsetY: -18,
+            homeShadowWidth: 168,
+            homeShadowFootGap: 2,
+            experienceRule: CharacterExperienceRule(
+                baseRequiredExperience: 3, // レベル1から2に必要な経験値
+                levelGrowth: 0.5,          // レベルが上がるたびに増える量
+                levelOverrides: initialLevelOverride // 例: [5: 80] と書くとレベル5だけ80に固定
+            )
         ),
-        "uruhuneko0001": CharacterExperienceRule(
-            baseRequiredExperience: 3, // レベル1から2に必要な経験値
-            levelGrowth: 0.5,          // レベルが上がるたびに増える量
-            levelOverrides: initialLevelOverride // 例: [5: 80] と書くとレベル5だけ80に固定
+        CharacterMaster(
+            id: "uruhuneko0001",
+            defaultName: "ウルフン",
+            imageName: "uruhuneko0001",
+            explanation: "リッスン王国に住む盗賊の頭。金銀財宝が大好き。",
+            homeImageWidthRatio: 1.86,
+            homeFootOffsetX: 0,
+            homeFootOffsetY: -14,
+            homeShadowWidth: 176,
+            homeShadowFootGap: 2,
+            experienceRule: CharacterExperienceRule(
+                baseRequiredExperience: 3, // レベル1から2に必要な経験値
+                levelGrowth: 0.5,          // レベルが上がるたびに増える量
+                levelOverrides: initialLevelOverride // 例: [5: 80] と書くとレベル5だけ80に固定
+            )
         ),
-        "usaneko0001": CharacterExperienceRule(
-            baseRequiredExperience: 3, // レベル1から2に必要な経験値
-            levelGrowth: 0.5,          // レベルが上がるたびに増える量
-            levelOverrides: initialLevelOverride // 例: [5: 80] と書くとレベル5だけ80に固定
+        CharacterMaster(
+            id: "usaneko0001",
+            defaultName: "リボン",
+            imageName: "usaneko0001",
+            explanation: "ねこ吉とは幼馴染。みんなの人気者で、密かにねこ吉に恋をする。",
+            homeImageWidthRatio: 1.28,
+            homeFootOffsetX: -10,
+            homeFootOffsetY: -22,
+            homeShadowWidth: 174,
+            homeShadowFootGap: 2,
+            experienceRule: CharacterExperienceRule(
+                baseRequiredExperience: 3, // レベル1から2に必要な経験値
+                levelGrowth: 0.5,          // レベルが上がるたびに増える量
+                levelOverrides: initialLevelOverride // 例: [5: 80] と書くとレベル5だけ80に固定
+            )
         )
     ]
 
+    /// 指定したキャラクターIDのマスタ情報を返す。
+    static func character(id: String) -> CharacterMaster? {
+        characters.first { $0.id == id }
+    }
+
     /// キャラクターIDと現在レベルに応じた必要経験値を返す。
     static func requiredExperience(characterId: String, level: Int) -> Int {
-        let rule = rulesByCharacterId[characterId] ?? defaultRule
-        return rule.requiredExperience(for: level)
+        (character(id: characterId) ?? characters[0]).experienceRule.requiredExperience(for: level)
     }
 }

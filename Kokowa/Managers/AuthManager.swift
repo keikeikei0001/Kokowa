@@ -16,11 +16,11 @@ class AuthManager: ObservableObject {
         static let isSignedIn = "isSignedIn"
     }
 
-    private let keychainRepository = KeychainRepository()
-    
+    private let userDefaultsRepository = UserDefaultsRepository()
+
     /// 保存済みのログイン状態とユーザーIDを復元する。
     init() {
-        userId = keychainRepository.loadFromKeychain()
+        userId = userDefaultsRepository.loadUserId()
         isSignedIn = UserDefaults.standard.bool(forKey: UserDefaultsKey.isSignedIn)
     }
 
@@ -36,17 +36,17 @@ class AuthManager: ObservableObject {
             self.isSignedIn = true
         }
     }
-    
+
     /// 指定したユーザーIDを保存してログイン状態にする。
     func SignIn(userId: String) {
-        keychainRepository.saveToKeychain(userIdentifier: userId)
+        userDefaultsRepository.saveUserId(userId)
         DispatchQueue.main.async {
             UserDefaults.standard.set(true, forKey: UserDefaultsKey.isSignedIn)
             self.userId = userId
             self.isSignedIn = true
         }
     }
-    
+
     /// ログイン状態だけを解除する。
     func SignOut() {
         UserDefaults.standard.set(false, forKey: UserDefaultsKey.isSignedIn)
@@ -58,6 +58,6 @@ class AuthManager: ObservableObject {
         UserDefaults.standard.removeObject(forKey: UserDefaultsKey.isSignedIn)
         self.isSignedIn = false
         self.userId = nil
-        keychainRepository.deleteFromKeychain()
+        userDefaultsRepository.deleteUserId()
     }
 }

@@ -77,6 +77,6 @@ final class LocalCharacterRepository: CharacterRepository {
 
     /// キャラクターIDとレベルに応じた必要経験値を返す。
     func requiredExperience(characterId: String, level: Int) -> Int {
-        CharacterExperienceTable.requiredExperience(characterId: characterId, level: level)
+        CharacterMasterStore.requiredExperience(characterId: characterId, level: level)
     }
 }

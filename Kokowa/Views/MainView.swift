@@ -45,7 +45,7 @@ struct MainView: View {
                 VStack(spacing: 0) {
                     Spacer()
                     messageView()
-                    characterImageView()
+                    characterImageView(screenSize: proxy.size)
                         .padding(.bottom, 35)
                 }
             }
@@ -168,26 +168,34 @@ struct MainView: View {
 
     /// キャラクター画像と影を表示する。
     @ViewBuilder
-    private func characterImageView() -> some View {
-        ZStack {
+    private func characterImageView(screenSize: CGSize) -> some View {
+        ZStack(alignment: .bottom) {
             Ellipse()
                 .fill(Color.black.opacity(0.20))
                 .frame(
-                    width: viewModel.characterShadowWidth * viewModel.motion.shadowScale,
-                    height: viewModel.characterShadowHeight * viewModel.motion.shadowScale
+                    width: viewModel.characterShadowWidth(in: screenSize),
+                    height: viewModel.characterShadowHeight(in: screenSize)
                 )
-                .offset(y: viewModel.characterShadowOffsetY)
+                .offset(y: viewModel.characterShadowOffsetY(in: screenSize))
 
             Image(viewModel.characterImageName)
                 .resizable()
                 .scaledToFit()
-                .frame(width: viewModel.characterImageSize)
+                .frame(width: viewModel.characterImageWidth(in: screenSize))
                 .shadow(color: .black.opacity(0.18), radius: 12, x: 0, y: 10)
-                .offset(y: viewModel.characterFootOffsetY + viewModel.motion.jumpOffset)
+                .offset(
+                    x: viewModel.characterFootOffsetX(in: screenSize),
+                    y: viewModel.characterFootOffsetY(in: screenSize)
+                )
                 .rotationEffect(.degrees(viewModel.motion.rotationAngle))
                 .onTapGesture(perform: viewModel.handleCharacterImageTap)
         }
-        .frame(maxWidth: .infinity)
+        .frame(
+            maxWidth: .infinity,
+            minHeight: viewModel.characterStageHeight(in: screenSize),
+            maxHeight: viewModel.characterStageHeight(in: screenSize),
+            alignment: .bottom
+        )
     }
 
     /// 下部ボタンView
