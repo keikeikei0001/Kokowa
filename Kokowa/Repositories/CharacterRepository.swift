@@ -15,8 +15,8 @@ protocol CharacterRepository {
     /// 所有キャラクターを作成し、使用中キャラクターとして保存する。
     func createInitialCharacter(userId: String, characterId: String, name: String) throws -> OwnedCharacter
 
-    /// 指定したキャラクターに経験値を追加する。
-    func addExperience(to character: OwnedCharacter, amount: Int) throws
+    /// 指定したキャラクターに経験値を追加し、レベルアップしたかを返す。
+    func addExperience(to character: OwnedCharacter, amount: Int) throws -> Bool
 
     /// キャラクターIDとレベルに応じた必要経験値を返す。
     func requiredExperience(characterId: String, level: Int) -> Int
@@ -60,9 +60,10 @@ final class LocalCharacterRepository: CharacterRepository {
         return character
     }
 
-    /// 指定したキャラクターに経験値を追加する。
-    func addExperience(to character: OwnedCharacter, amount: Int) throws {
+    /// 指定したキャラクターに経験値を追加し、レベルアップしたかを返す。
+    func addExperience(to character: OwnedCharacter, amount: Int) throws -> Bool {
         character.experiencePoint += amount
+        let previousLevel = character.level
 
         var nextLevelExperience = requiredExperience(characterId: character.characterId, level: character.level)
         while character.experiencePoint >= nextLevelExperience {
@@ -73,6 +74,7 @@ final class LocalCharacterRepository: CharacterRepository {
 
         character.updatedAt = Date()
         try modelContext.save()
+        return character.level > previousLevel
     }
 
     /// キャラクターIDとレベルに応じた必要経験値を返す。

@@ -26,6 +26,7 @@ final class EntryViewModel: ObservableObject {
     private var mentalEntryRepository: MentalEntryRepository?
     private var characterRepository: CharacterRepository?
     private var userProfileRepository: UserProfileRepository?
+    private let userDefaultsRepository = UserDefaultsRepository()
 
     private let saveExperiencePoint = 1
 
@@ -202,7 +203,10 @@ final class EntryViewModel: ObservableObject {
             )
 
             if result.isFirstSaveOfDay, let activeCharacter = try characterRepository.fetchActiveCharacter(userId: userId) {
-                try characterRepository.addExperience(to: activeCharacter, amount: saveExperiencePoint)
+                let didLevelUp = try characterRepository.addExperience(to: activeCharacter, amount: saveExperiencePoint)
+                if didLevelUp {
+                    userDefaultsRepository.savePendingLevelUpEffect()
+                }
             }
 
             let activeCharacterId = try userProfileRepository.fetchUserProfile(userId: userId)?.activeCharacterId

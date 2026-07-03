@@ -8,18 +8,27 @@
 import SwiftUI
 import Combine
 import SwiftData
+import AudioToolbox
 
 class MainViewModel: ObservableObject {
     @Published var activeCharacter: OwnedCharacter?
     @Published var userProfile: UserProfile?
     @Published var motion = MainCharacterMotion()
     @Published var alert: AlertContext?
+    @Published var isLevelUpEffectActive = false
+    @Published var isInteractionLocked = false
+    @Published var levelUpRingScale: CGFloat = 0.25
+    @Published var levelUpRingOpacity: Double = 0
+    @Published var levelUpSparkleScale: CGFloat = 0.4
+    @Published var levelUpSparkleOpacity: Double = 0
+    @Published var levelUpSparkleRotation: Double = 0
 
     private var userId: String?
     private var characterRepository: CharacterRepository?
     private var userProfileRepository: UserProfileRepository?
     private let baseCharacterLayoutWidth: CGFloat = 390
     private let baseShadowHeight: CGFloat = 30
+    private let userDefaultsRepository = UserDefaultsRepository()
 
     /// キャラクター名の表示用テキストを返す。
     var characterNameText: String {
@@ -115,12 +124,56 @@ class MainViewModel: ObservableObject {
         loadInitialCharacter()
     }
 
+    /// 予約済みのレベルアップ演出があれば開始する。
+    func startPendingLevelUpEffectIfNeeded() {
+        guard userDefaultsRepository.hasPendingLevelUpEffect() else { return }
+        userDefaultsRepository.deletePendingLevelUpEffect()
+        startLevelUpEffect()
+    }
+
     /// キャラクター画像タップ時のリアクションを実行する。
     func handleCharacterImageTap() {
+        guard isInteractionLocked == false else { return }
+
         if Bool.random() {
             occurCharacterTiltEffect()
         } else {
             occurCharacterJumpEffect()
+        }
+    }
+
+    /// レベルアップ演出を開始する。
+    func startLevelUpEffect() {
+        guard isLevelUpEffectActive == false else { return }
+
+        loadInitialCharacter()
+        resetLevelUpEffectValues()
+        isInteractionLocked = true
+        isLevelUpEffectActive = true
+        playLevelUpSound()
+
+        withAnimation(.easeOut(duration: 1.1)) {
+            levelUpRingScale = 1.45
+            levelUpRingOpacity = 0.9
+            levelUpSparkleScale = 1
+            levelUpSparkleOpacity = 1
+            levelUpSparkleRotation = 120
+        }
+
+        runLevelUpJumpSequence()
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.55) {
+            withAnimation(.easeInOut(duration: 0.72)) {
+                self.levelUpRingScale = 2.1
+                self.levelUpRingOpacity = 0
+                self.levelUpSparkleOpacity = 0
+                self.levelUpSparkleRotation = 220
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.35) {
+            self.isLevelUpEffectActive = false
+            self.showLevelUpAlert()
         }
     }
 
@@ -208,5 +261,84 @@ class MainViewModel: ObservableObject {
         }
 
         return CharacterMasterStore.character(id: activeCharacter.characterId) ?? CharacterMasterStore.characters[0]
+    }
+
+    /// レベルアップ演出の値を初期化する。
+    private func resetLevelUpEffectValues() {
+        motion.jumpOffset = 0
+        motion.shadowScale = 1
+        motion.rotationAngle = 0
+        motion.showMessage = false
+        levelUpRingScale = 0.25
+        levelUpRingOpacity = 0
+        levelUpSparkleScale = 0.4
+        levelUpSparkleOpacity = 0
+        levelUpSparkleRotation = 0
+    }
+
+    /// レベルアップ時のジャンプ演出を実行する。
+    private func runLevelUpJumpSequence() {
+        let jumpHeight: CGFloat = -52
+        let upDuration: TimeInterval = 0.18
+        let downDuration: TimeInterval = 0.22
+
+        withAnimation(.easeOut(duration: upDuration)) {
+            motion.jumpOffset = jumpHeight
+            motion.shadowScale = 0.62
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + upDuration) {
+            withAnimation(.easeIn(duration: downDuration)) {
+                self.motion.jumpOffset = 0
+                self.motion.shadowScale = 1
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.54) {
+            withAnimation(.easeOut(duration: upDuration)) {
+                self.motion.jumpOffset = jumpHeight * 0.72
+                self.motion.shadowScale = 0.74
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.54 + upDuration) {
+            withAnimation(.easeIn(duration: downDuration)) {
+                self.motion.jumpOffset = 0
+                self.motion.shadowScale = 1
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.08) {
+            withAnimation(.easeOut(duration: upDuration)) {
+                self.motion.jumpOffset = jumpHeight * 0.46
+                self.motion.shadowScale = 0.84
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.08 + upDuration) {
+            withAnimation(.easeIn(duration: downDuration)) {
+                self.motion.jumpOffset = 0
+                self.motion.shadowScale = 1
+            }
+        }
+    }
+
+    /// レベルアップ時の効果音を再生する。
+    private func playLevelUpSound() {
+        AudioServicesPlaySystemSound(1025)
+    }
+
+    /// レベルアップ完了後のアラートを表示する。
+    private func showLevelUpAlert() {
+        alert = AlertContext(
+            title: "おめでとう！！",
+            message: "この調子で頑張ろう！！",
+            actions: [
+                AlertContext.Action(title: "OK", role: nil) { [weak self] _ in
+                    self?.alert = nil
+                    self?.isInteractionLocked = false
+                }
+            ]
+        )
     }
 }

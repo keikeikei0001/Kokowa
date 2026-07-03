@@ -58,6 +58,7 @@ class AuthManager: ObservableObject {
         UserDefaults.standard.removeObject(forKey: UserDefaultsKey.isSignedIn)
         self.isSignedIn = false
         self.userId = nil
+        userDefaultsRepository.deletePendingLevelUpEffect()
         userDefaultsRepository.deleteUserId()
     }
 }

@@ -23,6 +23,7 @@ struct MainView: View {
             .alert($viewModel.alert)
             .onAppear {
                 viewModel.configure(modelContext: modelContext, userId: authManager.userId)
+                viewModel.startPendingLevelUpEffectIfNeeded()
             }
         }
     }
@@ -47,6 +48,12 @@ struct MainView: View {
                     messageView()
                     characterImageView(screenSize: proxy.size)
                         .padding(.bottom, 35)
+                }
+
+                if viewModel.isInteractionLocked {
+                    Color.clear
+                        .contentShape(Rectangle())
+                        .ignoresSafeArea()
                 }
             }
         }
@@ -170,6 +177,8 @@ struct MainView: View {
     @ViewBuilder
     private func characterImageView(screenSize: CGSize) -> some View {
         ZStack(alignment: .bottom) {
+            levelUpEffectView(screenSize: screenSize)
+
             Ellipse()
                 .fill(Color.black.opacity(0.20))
                 .frame(
@@ -198,6 +207,45 @@ struct MainView: View {
         )
     }
 
+    /// レベルアップ時の光の輪とキラキラを表示する。
+    @ViewBuilder
+    private func levelUpEffectView(screenSize: CGSize) -> some View {
+        if viewModel.isLevelUpEffectActive {
+            let characterWidth = viewModel.characterImageWidth(in: screenSize)
+            let ringSize = characterWidth * 0.88
+            let sparkleSize = characterWidth * 0.72
+
+            ZStack {
+                Circle()
+                    .stroke(
+                        LinearGradient(
+                            colors: [.white, .kokowaCream, .kokowaTeal.opacity(0.64)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: max(5, ringSize * 0.045)
+                    )
+                    .frame(width: ringSize, height: ringSize)
+                    .scaleEffect(viewModel.levelUpRingScale)
+                    .opacity(viewModel.levelUpRingOpacity)
+
+                ForEach(0..<12, id: \.self) { index in
+                    Image(systemName: index.isMultiple(of: 2) ? "sparkle" : "star.fill")
+                        .font(.system(size: max(12, sparkleSize * 0.075), weight: .bold))
+                        .foregroundStyle(index.isMultiple(of: 2) ? .kokowaTeal : .kokowaTerracotta)
+                        .offset(y: -sparkleSize / 2)
+                        .rotationEffect(.degrees(Double(index) * 30 + viewModel.levelUpSparkleRotation))
+                }
+                .scaleEffect(viewModel.levelUpSparkleScale)
+                .opacity(viewModel.levelUpSparkleOpacity)
+            }
+            .offset(
+                x: viewModel.characterFootOffsetX(in: screenSize),
+                y: viewModel.characterFootOffsetY(in: screenSize) - (characterWidth * 0.34)
+            )
+        }
+    }
+
     /// 下部ボタンView
     private func bottomButtonView() -> some View {
         HStack(spacing: 1) {
@@ -207,6 +255,7 @@ struct MainView: View {
             naviLinkButtonView("sparkles", title: "内観", AnyView(IntrospectionView()))
             naviLinkButtonView("gear", title: "設定", AnyView(SettingView()))
         }
+        .disabled(viewModel.isInteractionLocked)
         .frame(maxWidth: .infinity)
         .padding(.top, 10)
         .padding(.bottom, 12)
