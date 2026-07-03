@@ -16,24 +16,9 @@ class SoundPlayer {
         try? AVAudioSession.sharedInstance().setActive(true)
     }
     
-    /// タスク完了時の効果音処理
-    func playTaskCompleteSound() {
-        if let asset = NSDataAsset(name: "男衆「イエーイ！」") {
-            do {
-                audioPlayer = try AVAudioPlayer(data: asset.data)
-                audioPlayer?.prepareToPlay()
-                audioPlayer?.play()
-            } catch {
-                print("音声の再生に失敗しました: \(error.localizedDescription)")
-            }
-        } else {
-            print("音声ファイルが見つかりません")
-        }
-    }
-    
-    /// タスク完了時の効果音処理
+    /// レベルアップ時の効果音処理
     func playLevelUpSound() {
-        if let asset = NSDataAsset(name: "男衆「イエーイ！」") {
+        if let asset = NSDataAsset(name: "男衆「イヤッホー！」") {
             do {
                 audioPlayer = try AVAudioPlayer(data: asset.data)
                 audioPlayer?.prepareToPlay()

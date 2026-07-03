@@ -29,6 +29,7 @@ class MainViewModel: ObservableObject {
     private let baseCharacterLayoutWidth: CGFloat = 390
     private let baseShadowHeight: CGFloat = 30
     private let userDefaultsRepository = UserDefaultsRepository()
+    private let soundPlayer = SoundPlayer()
 
     /// キャラクター名の表示用テキストを返す。
     var characterNameText: String {
@@ -150,18 +151,17 @@ class MainViewModel: ObservableObject {
         resetLevelUpEffectValues()
         isInteractionLocked = true
         isLevelUpEffectActive = true
-        playLevelUpSound()
-
         withAnimation(.easeOut(duration: 1.1)) {
             levelUpRingScale = 1.45
             levelUpRingOpacity = 0.9
             levelUpSparkleScale = 1
             levelUpSparkleOpacity = 1
             levelUpSparkleRotation = 120
+            soundPlayer.playLevelUpSound()
         }
 
         runLevelUpJumpSequence()
-
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.55) {
             withAnimation(.easeInOut(duration: 0.72)) {
                 self.levelUpRingScale = 2.1
@@ -321,11 +321,6 @@ class MainViewModel: ObservableObject {
                 self.motion.shadowScale = 1
             }
         }
-    }
-
-    /// レベルアップ時の効果音を再生する。
-    private func playLevelUpSound() {
-        AudioServicesPlaySystemSound(1025)
     }
 
     /// レベルアップ完了後のアラートを表示する。
