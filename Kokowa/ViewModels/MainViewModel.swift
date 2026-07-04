@@ -326,8 +326,8 @@ class MainViewModel: ObservableObject {
     /// レベルアップ完了後のアラートを表示する。
     private func showLevelUpAlert() {
         alert = AlertContext(
-            title: "おめでとう！！",
-            message: "この調子で頑張ろう！！",
+            title: "レベルアップおめでとう！！",
+            message: "無理をしない程度にこの調子でやっていこう！！",
             actions: [
                 AlertContext.Action(title: "OK", role: nil) { [weak self] _ in
                     self?.alert = nil
