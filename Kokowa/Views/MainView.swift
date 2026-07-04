@@ -35,6 +35,11 @@ struct MainView: View {
             ZStack {
                 mainBackgroundView(size: proxy.size)
 
+                if viewModel.isLevelUpEffectActive {
+                    Color.black.opacity(viewModel.levelUpBackdropOpacity)
+                        .ignoresSafeArea()
+                }
+
                 VStack(spacing: 0) {
                     characterStatusCardView()
                         .padding(.horizontal, 22)
@@ -45,7 +50,6 @@ struct MainView: View {
 
                 VStack(spacing: 0) {
                     Spacer()
-                    messageView()
                     characterImageView(screenSize: proxy.size)
                         .padding(.bottom, 35)
                 }
@@ -161,8 +165,8 @@ struct MainView: View {
 
     /// キャラクターからの短いメッセージを表示する。
     @ViewBuilder
-    private func messageView() -> some View {
-        Text("君は天才だニャン！")
+    private func messageView(screenSize: CGSize) -> some View {
+        Text(viewModel.characterMessageText)
             .font(.title3.weight(.bold))
             .foregroundStyle(.primaryTextBlack)
             .padding(.horizontal, 18)
@@ -170,7 +174,14 @@ struct MainView: View {
             .background(Color.white.opacity(0.78), in: Capsule())
             .shadow(color: Color.black.opacity(0.12), radius: 12, x: 0, y: 8)
             .opacity(viewModel.characterMessageOpacity)
-            .padding(.bottom, 10)
+            .lineLimit(2)
+            .multilineTextAlignment(.center)
+            .minimumScaleFactor(0.82)
+            .padding(.horizontal, 22)
+            .offset(
+                x: viewModel.characterMessageOffsetX(in: screenSize),
+                y: viewModel.characterMessageOffsetY(in: screenSize)
+            )
     }
 
     /// キャラクター画像と影を表示する。
@@ -178,6 +189,7 @@ struct MainView: View {
     private func characterImageView(screenSize: CGSize) -> some View {
         ZStack(alignment: .bottom) {
             levelUpEffectView(screenSize: screenSize)
+            messageView(screenSize: screenSize)
 
             Ellipse()
                 .fill(Color.black.opacity(0.20))
@@ -187,17 +199,28 @@ struct MainView: View {
                 )
                 .offset(y: viewModel.characterShadowOffsetY(in: screenSize))
 
-            Image(viewModel.characterImageName)
-                .resizable()
-                .scaledToFit()
-                .frame(width: viewModel.characterImageWidth(in: screenSize))
-                .shadow(color: .black.opacity(0.18), radius: 12, x: 0, y: 10)
-                .offset(
-                    x: viewModel.characterFootOffsetX(in: screenSize),
-                    y: viewModel.characterFootOffsetY(in: screenSize)
-                )
-                .rotationEffect(.degrees(viewModel.motion.rotationAngle))
-                .onTapGesture(perform: viewModel.handleCharacterImageTap)
+            ZStack {
+                Image(viewModel.characterImageName)
+                    .resizable()
+                    .scaledToFit()
+
+                Image(viewModel.characterImageName)
+                    .renderingMode(.template)
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundStyle(Color.white)
+                    .shadow(color: Color.white.opacity(0.75), radius: 16)
+                    .opacity(viewModel.levelUpCharacterSilhouetteOpacity)
+            }
+            .frame(width: viewModel.characterImageWidth(in: screenSize))
+            .shadow(color: .black.opacity(0.18), radius: 12, x: 0, y: 10)
+            .offset(
+                x: viewModel.characterFootOffsetX(in: screenSize),
+                y: viewModel.characterFootOffsetY(in: screenSize)
+            )
+            .scaleEffect(viewModel.levelUpCharacterScale, anchor: .bottom)
+            .rotationEffect(.degrees(viewModel.motion.rotationAngle))
+            .onTapGesture(perform: viewModel.handleCharacterImageTap)
         }
         .frame(
             maxWidth: .infinity,
@@ -207,37 +230,55 @@ struct MainView: View {
         )
     }
 
-    /// レベルアップ時の光の輪とキラキラを表示する。
+    /// レベルアップ時の光・衝撃波・テキスト・粒子を表示する。
     @ViewBuilder
     private func levelUpEffectView(screenSize: CGSize) -> some View {
         if viewModel.isLevelUpEffectActive {
             let characterWidth = viewModel.characterImageWidth(in: screenSize)
-            let ringSize = characterWidth * 0.88
-            let sparkleSize = characterWidth * 0.72
+            let baseEffectSize = characterWidth * 0.98
 
             ZStack {
                 Circle()
-                    .stroke(
-                        LinearGradient(
-                            colors: [.white, .kokowaCream, .kokowaTeal.opacity(0.64)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        ),
-                        lineWidth: max(5, ringSize * 0.045)
-                    )
-                    .frame(width: ringSize, height: ringSize)
-                    .scaleEffect(viewModel.levelUpRingScale)
-                    .opacity(viewModel.levelUpRingOpacity)
+                    .fill(Color.white.opacity(viewModel.levelUpFlashOpacity))
+                    .frame(width: baseEffectSize, height: baseEffectSize)
+                    .blur(radius: 22)
+                    .scaleEffect(viewModel.levelUpFlashScale)
 
-                ForEach(0..<12, id: \.self) { index in
-                    Image(systemName: index.isMultiple(of: 2) ? "sparkle" : "star.fill")
-                        .font(.system(size: max(12, sparkleSize * 0.075), weight: .bold))
-                        .foregroundStyle(index.isMultiple(of: 2) ? .kokowaTeal : .kokowaTerracotta)
-                        .offset(y: -sparkleSize / 2)
-                        .rotationEffect(.degrees(Double(index) * 30 + viewModel.levelUpSparkleRotation))
+                Circle()
+                    .stroke(Color.white.opacity(viewModel.levelUpRingOpacity), lineWidth: max(3, baseEffectSize * 0.02))
+                    .frame(width: baseEffectSize * 0.76, height: baseEffectSize * 0.76)
+                    .scaleEffect(viewModel.levelUpRingScale)
+
+                ForEach(viewModel.levelUpParticles) { particle in
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: particle.size, height: particle.size)
+                        .shadow(color: Color.white.opacity(0.55), radius: 8)
+                        .offset(
+                            x: viewModel.levelUpParticleProgress ? particle.x : 0,
+                            y: viewModel.levelUpParticleProgress ? particle.y : 0
+                        )
+                        .opacity(viewModel.levelUpParticleOpacity)
+                        .animation(
+                            .easeOut(duration: 0.95).delay(particle.delay),
+                            value: viewModel.levelUpParticleProgress
+                        )
                 }
-                .scaleEffect(viewModel.levelUpSparkleScale)
-                .opacity(viewModel.levelUpSparkleOpacity)
+
+                VStack(spacing: 4) {
+                    Text("LEVEL UP")
+                        .font(.system(size: max(24, characterWidth * 0.13), weight: .bold, design: .rounded))
+                        .foregroundStyle(Color.white.opacity(0.96))
+                        .shadow(color: .kokowaTeal.opacity(0.22), radius: 10)
+                        .shadow(color: Color.white.opacity(0.48), radius: 4)
+
+                    Text(viewModel.levelUpText)
+                        .font(.system(size: max(16, characterWidth * 0.075), weight: .bold, design: .rounded))
+                        .foregroundStyle(Color.white.opacity(0.9))
+                }
+                .opacity(viewModel.levelUpTextOpacity)
+                .scaleEffect(viewModel.levelUpTextScale)
+                .offset(y: -characterWidth * 0.62)
             }
             .offset(
                 x: viewModel.characterFootOffsetX(in: screenSize),

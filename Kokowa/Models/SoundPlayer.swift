@@ -18,7 +18,7 @@ class SoundPlayer {
     
     /// レベルアップ時の効果音処理
     func playLevelUpSound() {
-        if let asset = NSDataAsset(name: "男衆「イヤッホー！」") {
+        if let asset = NSDataAsset(name: "レベルアップ") {
             do {
                 audioPlayer = try AVAudioPlayer(data: asset.data)
                 audioPlayer?.prepareToPlay()

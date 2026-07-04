@@ -111,13 +111,15 @@ enum CharacterMasterStore {
             imageName: "kumaneko0001",
             explanation: "ズボラな猫。リッスン姫に恋をするがズボラが原因で振られる。",
             homeImageWidthRatio: 1.86,
+            homeImageAspectRatio: 747.0 / 729.0,
             homeFootOffsetX: 0,
             homeFootOffsetY: -18,
+            homeMessageTopGap: 18,
             homeShadowWidth: 168,
             homeShadowFootGap: 2,
             experienceRule: CharacterExperienceRule(
                 baseRequiredExperience: 3, // レベル1から2に必要な経験値
-                levelGrowth: 0.5,          // レベルが上がるたびに増える量
+                levelGrowth: 0.4,          // レベルが上がるたびに増える量
                 levelOverrides: initialLevelOverride // 例: [5: 80] と書くとレベル5だけ80に固定
             )
         ),
@@ -127,13 +129,15 @@ enum CharacterMasterStore {
             imageName: "uruhuneko0001",
             explanation: "リッスン王国に住む盗賊の頭。金銀財宝が大好き。",
             homeImageWidthRatio: 1.86,
+            homeImageAspectRatio: 746.0 / 758.0,
             homeFootOffsetX: 0,
             homeFootOffsetY: -14,
+            homeMessageTopGap: 18,
             homeShadowWidth: 176,
             homeShadowFootGap: 2,
             experienceRule: CharacterExperienceRule(
                 baseRequiredExperience: 3, // レベル1から2に必要な経験値
-                levelGrowth: 0.5,          // レベルが上がるたびに増える量
+                levelGrowth: 0.4,          // レベルが上がるたびに増える量
                 levelOverrides: initialLevelOverride // 例: [5: 80] と書くとレベル5だけ80に固定
             )
         ),
@@ -143,13 +147,15 @@ enum CharacterMasterStore {
             imageName: "usaneko0001",
             explanation: "ねこ吉とは幼馴染。みんなの人気者で、密かにねこ吉に恋をする。",
             homeImageWidthRatio: 1.28,
+            homeImageAspectRatio: 1200.0 / 796.0,
             homeFootOffsetX: -10,
             homeFootOffsetY: -22,
+            homeMessageTopGap: 18,
             homeShadowWidth: 174,
             homeShadowFootGap: 2,
             experienceRule: CharacterExperienceRule(
                 baseRequiredExperience: 3, // レベル1から2に必要な経験値
-                levelGrowth: 0.5,          // レベルが上がるたびに増える量
+                levelGrowth: 0.4,          // レベルが上がるたびに増える量
                 levelOverrides: initialLevelOverride // 例: [5: 80] と書くとレベル5だけ80に固定
             )
         )

@@ -14,8 +14,10 @@ struct CharacterMaster: Identifiable {
     let imageName: String
     let explanation: String
     let homeImageWidthRatio: CGFloat
+    let homeImageAspectRatio: CGFloat
     let homeFootOffsetX: CGFloat
     let homeFootOffsetY: CGFloat
+    let homeMessageTopGap: CGFloat
     let homeShadowWidth: CGFloat
     let homeShadowFootGap: CGFloat
     let experienceRule: CharacterExperienceRule
@@ -27,13 +29,15 @@ struct CharacterMaster: Identifiable {
         imageName: String,
         explanation: String,
         homeImageWidthRatio: CGFloat = 1.8,
+        homeImageAspectRatio: CGFloat = 1,
         homeFootOffsetX: CGFloat = 0,
         homeFootOffsetY: CGFloat = 0,
+        homeMessageTopGap: CGFloat = 18,
         homeShadowWidth: CGFloat = 180,
         homeShadowFootGap: CGFloat = 8,
         experienceRule: CharacterExperienceRule = CharacterExperienceRule(
             baseRequiredExperience: 3,
-            levelGrowth: 0.5,
+            levelGrowth: 0.4,
             levelOverrides: [1: 1]
         )
     ) {
@@ -42,8 +46,10 @@ struct CharacterMaster: Identifiable {
         self.imageName = imageName
         self.explanation = explanation
         self.homeImageWidthRatio = homeImageWidthRatio
+        self.homeImageAspectRatio = homeImageAspectRatio
         self.homeFootOffsetX = homeFootOffsetX
         self.homeFootOffsetY = homeFootOffsetY
+        self.homeMessageTopGap = homeMessageTopGap
         self.homeShadowWidth = homeShadowWidth
         self.homeShadowFootGap = homeShadowFootGap
         self.experienceRule = experienceRule
