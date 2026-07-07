@@ -15,6 +15,24 @@ final class SettingViewModel: ObservableObject {
     @Published var isSignedIn = false
     @Published var alert: AlertContext?
 
+    let appGuideItems = [
+        SettingGuideItem(
+            icon: "heart.text.square.fill",
+            title: "Kokowaについて",
+            body: "その日のメンタル、睡眠、体調、ストレス、感謝、メモを記録しながら、自分の心の状態を見返していくアプリです。記録や内観を通して、毎日を少しずつ整えていきます。"
+        ),
+        SettingGuideItem(
+            icon: "sparkles",
+            title: "キャラクターの成長",
+            body: "記入画面で、その日のメンタルなどの記録を保存をすると経験値を1獲得します。保存後に変更ボタンで内容を直しても、その日の経験値は追加されません。"
+        ),
+        SettingGuideItem(
+            icon: "arrow.up.forward.circle.fill",
+            title: "レベルアップ",
+            body: "次のレベルに必要な経験値は、使っているキャラクターと現在のレベルによって変わります。必要な経験値に達するとレベルアップします。"
+        )
+    ]
+
     private var authManager: AuthManager?
     private var accountRepository: AccountRepository?
 
@@ -120,4 +138,14 @@ final class SettingViewModel: ObservableObject {
 
 private enum AccountDeletionError: Error {
     case repositoryUnavailable
+}
+
+struct SettingGuideItem: Identifiable {
+    let icon: String
+    let title: String
+    let body: String
+
+    var id: String {
+        title
+    }
 }

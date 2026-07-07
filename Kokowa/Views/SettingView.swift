@@ -23,6 +23,7 @@ struct SettingView: View {
                     headerView()
                     accountCardView()
                     dataCardView()
+                    appGuideCardView()
                     actionCardView()
                 }
                 .padding(.horizontal, 22)
@@ -84,6 +85,20 @@ struct SettingView: View {
         .kokowaCard(cornerRadius: 24)
     }
 
+    /// アプリの使い方とキャラクターの成長ルールを表示するカード。
+    @ViewBuilder
+    private func appGuideCardView() -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            sectionTitleView(icon: "book.closed.fill", title: "アプリについて", color: .kokowaTerracotta)
+
+            ForEach(viewModel.appGuideItems) { item in
+                appGuideItemView(item)
+            }
+        }
+        .padding(22)
+        .kokowaCard(cornerRadius: 24)
+    }
+
     /// ログアウトとアカウント削除の操作を表示するカード。
     @ViewBuilder
     private func actionCardView() -> some View {
@@ -130,6 +145,32 @@ struct SettingView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
+        .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    /// アプリ説明カード内の1項目を表示する。
+    @ViewBuilder
+    private func appGuideItemView(_ item: SettingGuideItem) -> some View {
+        HStack(alignment: .top, spacing: 14) {
+            Image(systemName: item.icon)
+                .font(.headline.weight(.bold))
+                .foregroundStyle(.kokowaTerracotta)
+                .frame(width: 42, height: 42)
+                .background(Color.kokowaTerracotta.opacity(0.14), in: Circle())
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(item.title)
+                    .font(.headline.weight(.bold))
+                    .foregroundStyle(.primaryTextBlack)
+
+                Text(item.body)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondaryTextGray)
+                    .lineSpacing(3)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(16)
         .background(Color.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
